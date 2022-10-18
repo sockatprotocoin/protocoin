@@ -1,14 +1,13 @@
 package net.ddns.protocoin.util;
 
+import net.ddns.protocoin.core.util.Base58Check;
 import org.junit.jupiter.api.Test;
-
-import java.security.NoSuchAlgorithmException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class Base58CheckTest {
     @Test
-    void shouldEncodeBase58CheckFormatFirstBytePositive() throws NoSuchAlgorithmException {
+    void shouldEncodeBase58CheckFormatFirstBytePositive() {
         var bytes = new byte[]{
                 12, -76, 114, -4, -68, 5, -58, 62, -41, 103, 125,
                 -12, 107, -57, -20, -45, 114, -128, -77, 34
@@ -21,7 +20,7 @@ class Base58CheckTest {
     }
 
     @Test
-    void shouldEncodeBase58CheckFormatFirstByteNegative() throws NoSuchAlgorithmException {
+    void shouldEncodeBase58CheckFormatFirstByteNegative() {
         var bytes = new byte[]{
                 -12, -76, 114, -4, -68, 5, -58, 62, -41, 103, 125,
                 -12, 107, -57, -20, -45, 114, -128, -77, 34

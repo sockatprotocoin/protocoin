@@ -1,16 +1,15 @@
 package net.ddns.protocoin.key;
 
-import net.ddns.protocoin.ecdsa.Curve;
-import net.ddns.protocoin.ecdsa.ECPoint;
+import net.ddns.protocoin.core.ecdsa.Curve;
+import net.ddns.protocoin.core.ecdsa.ECPoint;
+import net.ddns.protocoin.core.key.KeyPair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.math.BigInteger;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
 class KeyPairTest {
@@ -21,7 +20,7 @@ class KeyPairTest {
     private KeyPair keyPair;
 
     @BeforeEach
-    void setup() throws NoSuchProviderException, NoSuchAlgorithmException {
+    void setup() {
         curve = Mockito.mock(Curve.class);
         when(curve.publicKey(privateKeyMock)).thenReturn(publicKeyMock);
         keyPair = new KeyPair(privateKeyMock, curve);

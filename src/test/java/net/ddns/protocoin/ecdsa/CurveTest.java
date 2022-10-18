@@ -1,13 +1,15 @@
 package net.ddns.protocoin.ecdsa;
 
-import net.ddns.protocoin.util.Converter;
-import net.ddns.protocoin.util.Hash;
+import net.ddns.protocoin.core.ecdsa.Curve;
+import net.ddns.protocoin.core.ecdsa.Signature;
+import net.ddns.protocoin.core.util.Converter;
+import net.ddns.protocoin.core.util.Hash;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
-import java.security.NoSuchAlgorithmException;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CurveTest {
     private final BigInteger privateKeyMock = new BigInteger("D12D2FACA9AD92828D89683778CB8DFCCDBD6C9E92F6AB7D6065E8AACC1FF6D6", 16);
@@ -29,7 +31,7 @@ class CurveTest {
     }
 
     @Test
-    void shouldGenerateValidSignature() throws NoSuchAlgorithmException {
+    void shouldGenerateValidSignature() {
         var message = Hash.sha256("hello".getBytes());
         var signature = curve.sign(privateKeyMock, message);
 
@@ -38,7 +40,7 @@ class CurveTest {
     }
 
     @Test
-    void shouldVerifyValidSignature() throws NoSuchAlgorithmException {
+    void shouldVerifyValidSignature() {
         var message = Hash.sha256("hello".getBytes());
         assertTrue(curve.verify(signatureMock, curve.publicKey(privateKeyMock), message));
     }

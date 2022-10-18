@@ -1,5 +1,6 @@
 package net.ddns.protocoin.util;
 
+import net.ddns.protocoin.core.util.Converter;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
