@@ -30,7 +30,7 @@ public class Converter {
     public static byte[] bigIntegerToPaddedByteArray(BigInteger bigInteger, int targetSize) {
         var rBytes = bigInteger.toByteArray();
         var paddedR = new byte[targetSize];
-        System.arraycopy(rBytes, 0, paddedR, rBytes.length - targetSize, rBytes.length);
+        System.arraycopy(rBytes, 0, paddedR, targetSize - rBytes.length, rBytes.length);
 
         return paddedR;
     }
