@@ -3,6 +3,7 @@ package net.ddns.protocoin.util;
 import net.ddns.protocoin.core.util.Converter;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigInteger;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -28,5 +29,23 @@ class ConverterTest {
         var afterConversion = Converter.hexStringToByteArray(hexString);
 
         assertArrayEquals(bytesOfHexString, afterConversion);
+    }
+
+    @Test
+    void shouldPadToByteArrayOfTargetSize(){
+        var bigIntegerValue = new BigInteger(hexString,16);
+
+        var expected = new byte[]{
+                0, 0, 0, 0, 0,
+                4, 107, 56, -22, -46, -126, 76, 100, -6, 57, 77, -122, 65, -77,
+                101, -2, -31, 122, 78, 123, 45, 109, 41, 32, 101, -3, -2, 78,
+                58, 15, -40, -8, -126, 68, -38, -62, 111, 19, -79, -70, 104, -63,
+                21, -62, -86, 33, -95, -74, -112, -53, -45, 124, 67, 49, 120, 61,
+                -26, -22, -29, 10, 23, -51, 14, -61, -14,
+        };
+
+        var received = Converter.bigIntegerToPaddedByteArray(bigIntegerValue,70);
+
+        assertArrayEquals(expected, received);
     }
 }
