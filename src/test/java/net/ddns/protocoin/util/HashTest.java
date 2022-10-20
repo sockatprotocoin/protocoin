@@ -15,7 +15,7 @@ class HashTest {
         var hashBytes = Hash.sha256(Converter.hexStringToByteArray(publicKey));
         var hashString = Converter.byteArrayToHexString(hashBytes);
 
-        Assertions.assertEquals(hashExpected, hashString);
+        Assertions.assertEquals(hashExpected, hashString.toUpperCase());
     }
 
     @Test
@@ -27,7 +27,7 @@ class HashTest {
         var hashBytes = Hash.sha256(Converter.hexStringToByteArray(publicKey), 2);
         var hashString = Converter.byteArrayToHexString(hashBytes);
 
-        Assertions.assertEquals(hashExpected, hashString);
+        Assertions.assertEquals(hashExpected, hashString.toUpperCase());
     }
 
     @Test
@@ -39,6 +39,6 @@ class HashTest {
         var hashBytes = Hash.ripeMD160(Converter.hexStringToByteArray(hash1));
         var hashString = Converter.byteArrayToHexString(hashBytes);
 
-        Assertions.assertEquals(hash2Expected, hashString);
+        Assertions.assertEquals(hash2Expected, hashString.toUpperCase());
     }
 }

@@ -21,7 +21,7 @@ class ConverterTest {
     void shouldCorrectlyConvertBytesToHexString() {
         var afterConversion = Converter.byteArrayToHexString(bytesOfHexString);
 
-        assertEquals(hexString, afterConversion);
+        assertEquals(hexString, afterConversion.toUpperCase());
     }
 
     @Test

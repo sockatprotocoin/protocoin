@@ -22,9 +22,9 @@ class VarIntTest {
 
     @Test
     void twoByteValueTest() {
-        var expected = "fd00c8";
+        var expected = "fd00fc";
 
-        var varInt = new VarInt(200);
+        var varInt = new VarInt(252);
         var bytes = varInt.getBytes();
         var bytesString = Converter.byteArrayToHexString(bytes);
 
