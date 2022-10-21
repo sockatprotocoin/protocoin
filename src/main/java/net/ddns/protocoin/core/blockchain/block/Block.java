@@ -1,6 +1,7 @@
 package net.ddns.protocoin.core.blockchain.block;
 
 import net.ddns.protocoin.core.blockchain.Bytable;
+import net.ddns.protocoin.core.blockchain.data.Bytes;
 import net.ddns.protocoin.core.blockchain.transaction.Transaction;
 import net.ddns.protocoin.core.blockchain.data.VarInt;
 import net.ddns.protocoin.core.util.ArrayUtil;
@@ -14,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Block implements Bytable {
-    public final static byte[] MAGIC_BYTES = new byte[]{6, 9, 6, 9};
+    public final static Bytes MAGIC_BYTES = Bytes.of(new byte[]{6, 9, 6, 9}, 4);
     private final BlockHeader blockHeader;
     private final VarInt transactionCount;
     private final List<Transaction> transactions;
@@ -74,6 +75,6 @@ public class Block implements Bytable {
     @Override
     public byte[] getBytes() {
         var transactionsBytes = ArrayUtil.bytableListToArray(transactions);
-        return ArrayUtil.concat(MAGIC_BYTES, blockHeader.getBytes(), transactionCount.getBytes(), transactionsBytes);
+        return ArrayUtil.concat(MAGIC_BYTES.getBytes(), blockHeader.getBytes(), transactionCount.getBytes(), transactionsBytes);
     }
 }

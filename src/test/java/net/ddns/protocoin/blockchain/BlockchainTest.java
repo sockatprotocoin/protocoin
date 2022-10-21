@@ -52,7 +52,7 @@ class BlockchainTest {
         var topBlock = blockchain.getLastBlock();
 
         var header = new BlockHeader(topBlock.getHash(), new byte[32], new byte[4], new BigInteger("200696f4", 16).toByteArray(), new byte[4]);
-        var transactionInput = new TransactionInput(topBlock.getTransactions().get(0).getTxId(), new byte[]{0});
+        var transactionInput = new TransactionInput(topBlock.getTransactions().get(0).getTxId(), ArrayUtil.newByteArrayPaddedWithZeros(4, BigInteger.ZERO.toByteArray()));
         var transactionOutput = new TransactionOutput(
                 Satoshi.valueOf(new BigInteger("5000000000", 10)),
                 PayToPubKeyHash.fromPublicKey(publicKey1)

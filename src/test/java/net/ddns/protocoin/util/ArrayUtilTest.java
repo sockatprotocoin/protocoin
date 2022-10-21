@@ -1,5 +1,6 @@
 package net.ddns.protocoin.util;
 
+import net.ddns.protocoin.core.blockchain.data.Bytes;
 import net.ddns.protocoin.core.blockchain.data.VarInt;
 import net.ddns.protocoin.core.util.ArrayUtil;
 import org.junit.jupiter.api.Test;
@@ -9,7 +10,6 @@ import java.util.Arrays;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 public class ArrayUtilTest {
-
     @Test
     void shouldConcat2ByteTablesCorrectly(){
         var bytes1 = new byte[]{0, 1, 2, 3, 4, 5};
@@ -58,4 +58,15 @@ public class ArrayUtilTest {
         assertArrayEquals(expected, received);
     }
 
+    @Test
+    void shouldConcatBytableArrayToBytesCorrectly() {
+        var bytes1 = Bytes.of(new byte[]{1, 2, 3}, 3);
+        var bytes2 = Bytes.of(new byte[]{4, 5, 6}, 3);
+        var bytes3 = Bytes.of(new byte[]{7, 8, 9}, 3);
+
+        var expectedByteArray = new byte[]{1, 2, 3, 4, 5, 6, 7, 8 ,9};
+
+        var actualByteArray = ArrayUtil.concat(bytes1, bytes2, bytes3);
+        assertArrayEquals(expectedByteArray, actualByteArray);
+    }
 }

@@ -1,5 +1,6 @@
 package net.ddns.protocoin.core.blockchain.transaction.signature;
 
+import net.ddns.protocoin.core.blockchain.data.Bytes;
 import net.ddns.protocoin.core.util.ArrayUtil;
 import net.ddns.protocoin.core.util.Hash;
 
@@ -8,11 +9,11 @@ import java.util.Arrays;
 import static net.ddns.protocoin.core.script.OpCode.*;
 
 public class PayToPubKeyHash extends LockingScript {
-    private final byte[] pubKeyHash;
+    private final Bytes pubKeyHash = new Bytes(20);
 
     private PayToPubKeyHash(byte[] script, byte[] pubKeyHash) {
         super(script);
-        this.pubKeyHash = pubKeyHash;
+        this.pubKeyHash.setData(pubKeyHash);
     }
 
     public static PayToPubKeyHash fromPublicKey(byte[] publicKey) {
@@ -35,7 +36,7 @@ public class PayToPubKeyHash extends LockingScript {
 
     @Override
     public byte[] getReceiver() {
-        return pubKeyHash;
+        return pubKeyHash.getBytes();
     }
 
     @Override

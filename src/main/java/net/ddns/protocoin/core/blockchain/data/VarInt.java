@@ -2,16 +2,19 @@ package net.ddns.protocoin.core.blockchain.data;
 
 import net.ddns.protocoin.core.blockchain.Bytable;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
-import java.util.Arrays;
 
 public class VarInt implements Bytable {
+    private static final byte oneByteMarker = 0;
     private static final byte twoByteMarker = (byte) 0xFD;
     private static final byte fourByteMarker = (byte) 0xFE;
 //    private static final byte eightByteMarker = (byte) 0xFF;
-    private byte[] data;
+
+    private final byte marker;
+    private final Bytes data;
 
     public VarInt(int value) {
         this(BigInteger.valueOf(value));
@@ -20,33 +23,28 @@ public class VarInt implements Bytable {
     public VarInt(BigInteger value) {
         var byteValue = value.toByteArray();
 
+        int numOfActualBytes;
         if (value.compareTo(new BigInteger("fc", 16)) < 0) {
-            data = byteValue;
-            return;
+            marker = oneByteMarker;
+            numOfActualBytes = 1;
         } else if (value.compareTo(new BigInteger("ffff", 16)) < 0) {
-            data = new byte[3];
-            data[0] = twoByteMarker;
+            numOfActualBytes = 2;
+            marker = twoByteMarker;
         } else if (value.compareTo(new BigInteger("ffffffff", 16)) < 0) {
-            data = new byte[5];
-            data[0] = fourByteMarker;
+            numOfActualBytes = 4;
+            marker = fourByteMarker;
 //        } else if (value.compareTo(new BigInteger("ffffffffffffffff", 16)) < 0) {
 //            data = new byte[9];
 //            data[0] = eightByteMarker;
+        } else {
+            throw new IllegalArgumentException("VarInt value out of range");
         }
 
-        padWithZeros(data, byteValue);
+        this.data = Bytes.of(byteValue, numOfActualBytes);
     }
 
     public int integerValue() {
-        if (data.length == 1) {
-            return new BigInteger(Arrays.copyOfRange(data, 0, 1)).intValue();
-        } else {
-            return new BigInteger(Arrays.copyOfRange(data, 1, data.length)).intValue();
-        }
-    }
-
-    private void padWithZeros(byte[] array, byte[] value) {
-         System.arraycopy(value, 0, array, array.length - value.length, value.length);
+        return data.toBigInteger().intValue();
     }
 
     public static VarInt readFromIs(InputStream is) throws IOException {
@@ -65,6 +63,12 @@ public class VarInt implements Bytable {
 
     @Override
     public byte[] getBytes() {
-        return data;
+        var bs =new ByteArrayOutputStream();
+        if (marker != oneByteMarker) {
+            bs.write(marker);
+        }
+        bs.writeBytes(data.getBytes());
+
+        return bs.toByteArray();
     }
 }

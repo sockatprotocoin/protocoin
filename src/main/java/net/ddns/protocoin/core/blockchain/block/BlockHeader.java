@@ -1,6 +1,7 @@
 package net.ddns.protocoin.core.blockchain.block;
 
 import net.ddns.protocoin.core.blockchain.Bytable;
+import net.ddns.protocoin.core.blockchain.data.Bytes;
 import net.ddns.protocoin.core.util.ArrayUtil;
 
 import java.io.IOException;
@@ -9,25 +10,20 @@ import java.math.BigInteger;
 import java.util.Arrays;
 
 public class BlockHeader implements Bytable {
-    // 32 bytes
-    private final byte[] previousBlockHash;
-    // 32 bytes
-    private final byte[] merkleRoot;
-    // 4 bytes
-    private final byte[] timestamp;
-    // 4 bytes
-    private final byte[] targetCompressed;
-    // 4 bytes
-    private byte[] nonce;
+    private final Bytes previousBlockHash = new Bytes(32);
+    private final Bytes merkleRoot = new Bytes(32);
+    private final Bytes timestamp = new Bytes(4);
+    private final Bytes targetCompressed = new Bytes(4);
+    private final Bytes nonce = new Bytes(4);
 
     private final BigInteger target;
 
     public BlockHeader(byte[] previousBlockHash, byte[] merkleRoot, byte[] timestamp, byte[] targetCompressed, byte[] nonce) {
-        this.previousBlockHash = previousBlockHash;
-        this.merkleRoot = merkleRoot;
-        this.timestamp = timestamp;
-        this.targetCompressed = targetCompressed;
-        this.nonce = nonce;
+        this.previousBlockHash.setData(previousBlockHash);
+        this.merkleRoot.setData(merkleRoot);
+        this.timestamp.setData(timestamp);
+        this.targetCompressed.setData(targetCompressed);
+        this.nonce.setData(nonce);
 
         this.target = calculateTarget(targetCompressed);
     }
@@ -47,7 +43,7 @@ public class BlockHeader implements Bytable {
     }
 
     public void setNonce(byte[] nonce) {
-        this.nonce = nonce;
+        this.nonce.setData(nonce);
     }
 
     @Override

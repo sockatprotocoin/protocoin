@@ -17,7 +17,7 @@ public class BlockChainService {
         try {
             var is = blockChainSource.getBlockChainInputStream();
             while (is.available() > 0) {
-                if (Arrays.equals(is.readNBytes(4), Block.MAGIC_BYTES)) {
+                if (Arrays.equals(is.readNBytes(4), Block.MAGIC_BYTES.getBytes())) {
                     var block = Block.readFromInputStream(is);
                     blocks.add(block);
                     var transactions = block.getTransactions();

@@ -33,10 +33,13 @@ public class UTXOStorage {
     }
 
     public void spentTransactionOutput(TransactionInput transactionInput) {
-        var pubKeyHash = Hash.ripeMD160(Hash.sha256(transactionInput.getScriptSignature().getPublicKey()));
+        var pubKeyHash = Hash.ripeMD160(Hash.sha256(transactionInput.getScriptSignature().getPublicKey().getBytes()));
         var outputsForPubKeyHash = map.get(pubKeyHash);
         var matchingUnspentOutput = outputsForPubKeyHash.stream().filter(output ->
-                Arrays.equals(output.getParent().getTxId(), transactionInput.getTxid()) && (output.getVout() == transactionInput.getVout())
+                Arrays.equals(
+                        output.getParent().getTxId(), transactionInput.getTxid().getBytes()) &&
+                        (output.getVout() == transactionInput.getVout().getBytes()
+                )
         ).findFirst();
 
         matchingUnspentOutput.ifPresent(outputsForPubKeyHash::remove);

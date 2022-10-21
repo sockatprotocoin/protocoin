@@ -34,13 +34,13 @@ public class Blockchain {
         var transactionOutput = new TransactionOutput(
                 Satoshi.valueOf(new BigInteger("5000000000", 10)),
                 PayToPubKeyHash.fromPublicKey(publicKey)
-                );
+        );
         var transaction = new Transaction(
                 Collections.singletonList(transactionInput),
                 Collections.singletonList(transactionOutput)
         );
 
-        transactionInput.setScriptSignature(new ScriptSignature(new byte[32], publicKey));
+        transactionInput.setScriptSignature(new ScriptSignature(new byte[64], publicKey));
         return new Block(header, Collections.singletonList(transaction));
     }
 

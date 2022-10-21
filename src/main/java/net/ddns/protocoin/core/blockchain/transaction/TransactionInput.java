@@ -1,6 +1,7 @@
 package net.ddns.protocoin.core.blockchain.transaction;
 
 import net.ddns.protocoin.core.blockchain.Bytable;
+import net.ddns.protocoin.core.blockchain.data.Bytes;
 import net.ddns.protocoin.core.blockchain.transaction.signature.ScriptSignature;
 import net.ddns.protocoin.core.blockchain.data.VarInt;
 import net.ddns.protocoin.core.util.ArrayUtil;
@@ -10,16 +11,15 @@ import java.io.InputStream;
 import java.util.Arrays;
 
 public class TransactionInput implements Bytable {
-    // hash of previous transaction data (32 bytes)
-    private final byte[] txid;
-    // 4 bytes max is: 2147483647
-    private final byte[] vout;
+    // hash of previous transaction data
+    private final Bytes txid = new Bytes(32);
+    private final Bytes vout = new Bytes(4);
     private VarInt scriptSignatureSize;
     private ScriptSignature scriptSignature;
 
     public TransactionInput(byte[] txid, byte[] vout) {
-        this.txid = txid;
-        this.vout = vout;
+        this.txid.setData(txid);
+        this.vout.setData(vout);
     }
 
     public ScriptSignature getScriptSignature() {
@@ -31,11 +31,11 @@ public class TransactionInput implements Bytable {
         this.scriptSignature = scriptSignature;
     }
 
-    public byte[] getTxid() {
+    public Bytes getTxid() {
         return txid;
     }
 
-    public byte[] getVout() {
+    public Bytes getVout() {
         return vout;
     }
 
@@ -45,7 +45,7 @@ public class TransactionInput implements Bytable {
 
     @Override
     public byte[] getBytes() {
-        return ArrayUtil.concat(txid, vout, scriptSignatureSize.getBytes(), scriptSignature.getBytes());
+        return ArrayUtil.concat(txid.getBytes(), vout.getBytes(), scriptSignatureSize.getBytes(), scriptSignature.getBytes());
     }
 
     public static TransactionInput readFromInputStream(InputStream is) throws IOException {
