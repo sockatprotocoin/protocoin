@@ -1,6 +1,6 @@
 package net.ddns.protocoin.util;
 
-import net.ddns.protocoin.core.blockchain.util.VarInt;
+import net.ddns.protocoin.core.blockchain.data.VarInt;
 import net.ddns.protocoin.core.util.ArrayUtil;
 import org.junit.jupiter.api.Test;
 

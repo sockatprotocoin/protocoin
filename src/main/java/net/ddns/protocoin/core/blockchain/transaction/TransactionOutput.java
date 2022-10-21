@@ -3,8 +3,8 @@ package net.ddns.protocoin.core.blockchain.transaction;
 import net.ddns.protocoin.core.blockchain.Bytable;
 import net.ddns.protocoin.core.blockchain.transaction.signature.LockingScript;
 import net.ddns.protocoin.core.blockchain.transaction.signature.PayToPubKeyHash;
-import net.ddns.protocoin.core.blockchain.util.Satoshi;
-import net.ddns.protocoin.core.blockchain.util.VarInt;
+import net.ddns.protocoin.core.blockchain.data.Satoshi;
+import net.ddns.protocoin.core.blockchain.data.VarInt;
 import net.ddns.protocoin.core.util.ArrayUtil;
 
 import java.io.IOException;

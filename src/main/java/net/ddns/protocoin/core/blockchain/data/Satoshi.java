@@ -1,4 +1,4 @@
-package net.ddns.protocoin.core.blockchain.util;
+package net.ddns.protocoin.core.blockchain.data;
 
 import net.ddns.protocoin.core.blockchain.Bytable;
 

@@ -7,9 +7,7 @@ import net.ddns.protocoin.core.blockchain.transaction.TransactionInput;
 import net.ddns.protocoin.core.blockchain.transaction.TransactionOutput;
 import net.ddns.protocoin.core.blockchain.transaction.signature.PayToPubKeyHash;
 import net.ddns.protocoin.core.blockchain.transaction.signature.ScriptSignature;
-import net.ddns.protocoin.core.blockchain.util.Satoshi;
-import net.ddns.protocoin.core.ecdsa.Curve;
-import net.ddns.protocoin.core.util.Hash;
+import net.ddns.protocoin.core.blockchain.data.Satoshi;
 
 import java.math.BigInteger;
 import java.util.ArrayList;

@@ -2,18 +2,17 @@ package net.ddns.protocoin.core.blockchain.transaction;
 
 import net.ddns.protocoin.core.blockchain.Bytable;
 import net.ddns.protocoin.core.blockchain.transaction.signature.ScriptSignature;
-import net.ddns.protocoin.core.blockchain.util.VarInt;
+import net.ddns.protocoin.core.blockchain.data.VarInt;
 import net.ddns.protocoin.core.util.ArrayUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.math.BigInteger;
 import java.util.Arrays;
 
 public class TransactionInput implements Bytable {
     // hash of previous transaction data (32 bytes)
     private final byte[] txid;
-    // 4 bytes
+    // 4 bytes max is: 2147483647
     private final byte[] vout;
     private VarInt scriptSignatureSize;
     private ScriptSignature scriptSignature;

@@ -1,10 +1,8 @@
 package net.ddns.protocoin.blockchain.util;
 
-import net.ddns.protocoin.core.blockchain.util.VarInt;
+import net.ddns.protocoin.core.blockchain.data.VarInt;
 import net.ddns.protocoin.core.util.Converter;
 import org.junit.jupiter.api.Test;
-
-import java.math.BigInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
