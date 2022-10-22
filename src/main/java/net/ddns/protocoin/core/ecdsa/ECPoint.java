@@ -1,5 +1,6 @@
 package net.ddns.protocoin.core.ecdsa;
 
+import net.ddns.protocoin.core.blockchain.data.Bytes;
 import net.ddns.protocoin.core.util.ArrayUtil;
 
 import java.math.BigInteger;
@@ -22,6 +23,6 @@ public class ECPoint {
     }
 
     public byte[] toByteArray() {
-        return ArrayUtil.concat(x.toByteArray(), y.toByteArray());
+        return ArrayUtil.concat(Bytes.of(x.toByteArray(), 32), Bytes.of(y.toByteArray(), 32));
     }
 }
