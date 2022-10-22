@@ -29,7 +29,8 @@ public class TransactionOutput implements Bytable {
     }
 
     public byte[] getVout() {
-        return BigInteger.valueOf(getParent().getTransactionOutputs().indexOf(this)).toByteArray();
+        var byteSize = BigInteger.valueOf(getParent().getTransactionOutputs().indexOf(this)).toByteArray();
+        return ArrayUtil.newByteArrayPaddedWithZeros(4, byteSize);
     }
 
     public Transaction getParent() {

@@ -10,6 +10,7 @@ import net.ddns.protocoin.core.blockchain.transaction.signature.ScriptSignature;
 import net.ddns.protocoin.core.blockchain.data.Satoshi;
 
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -29,7 +30,13 @@ public class Blockchain {
     }
 
     public Block generateGenesisBlock(byte[] publicKey) {
-        var header = new BlockHeader(new byte[32], new byte[32], new byte[4], new BigInteger("200696f4", 16).toByteArray(), new byte[4]);
+        var header = new BlockHeader(
+                new byte[32],
+                new byte[32],
+                ByteBuffer.allocate(4).putInt(1666463854).array(),
+                new BigInteger("200696f4", 16).toByteArray(),
+                new byte[4]
+        );
         var transactionInput = new TransactionInput(new byte[32], new byte[4]);
         var transactionOutput = new TransactionOutput(
                 Satoshi.valueOf(new BigInteger("5000000000", 10)),

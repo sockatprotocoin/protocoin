@@ -8,10 +8,10 @@ import java.io.InputStream;
 import java.math.BigInteger;
 
 public class Satoshi implements Bytable {
-    private final Bytes amount = new Bytes(8);
+    private final Bytes bytes = new Bytes(8);
 
-    private Satoshi(byte[] amount) {
-        this.amount.setData(amount);
+    private Satoshi(byte[] bytes) {
+        this.bytes.setData(bytes);
     }
 
     public static Satoshi valueOf(BigInteger amount) throws IllegalStateException {
@@ -25,7 +25,7 @@ public class Satoshi implements Bytable {
 
     @Override
     public byte[] getBytes() {
-        return amount.getBytes();
+        return bytes.getBytes();
     }
 
     public static Satoshi readFromInputStream(InputStream is) throws IOException {

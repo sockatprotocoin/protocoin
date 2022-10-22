@@ -3,6 +3,7 @@ package net.ddns.protocoin.core.blockchain.data;
 import net.ddns.protocoin.core.blockchain.Bytable;
 
 import java.math.BigInteger;
+import java.util.Arrays;
 
 public class Bytes implements Bytable {
     private byte[] data;
@@ -54,5 +55,18 @@ public class Bytes implements Bytable {
     @Override
     public byte[] getBytes() {
         return data;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        var bytes = (Bytes) obj;
+        return Arrays.equals(this.getBytes(), bytes.getBytes());
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(this.getBytes());
     }
 }
