@@ -3,7 +3,6 @@ package net.ddns.protocoin.core.blockchain.transaction;
 import net.ddns.protocoin.core.blockchain.Bytable;
 import net.ddns.protocoin.core.blockchain.data.Bytes;
 import net.ddns.protocoin.core.blockchain.transaction.signature.ScriptSignature;
-import net.ddns.protocoin.core.blockchain.data.VarInt;
 import net.ddns.protocoin.core.util.ArrayUtil;
 
 import java.io.IOException;
@@ -12,13 +11,13 @@ import java.util.Arrays;
 
 public class TransactionInput implements Bytable {
     // hash of previous transaction data
-    private final Bytes txid = new Bytes(32);
-    private final Bytes vout = new Bytes(4);
+    private final Bytes txid;
+    private final Bytes vout;
     private ScriptSignature scriptSignature;
 
     public TransactionInput(byte[] txid, byte[] vout) {
-        this.txid.setData(txid);
-        this.vout.setData(vout);
+        this.txid = Bytes.of(txid, 32);
+        this.vout = Bytes.of(vout, 4);
     }
 
     public ScriptSignature getScriptSignature() {

@@ -29,7 +29,7 @@ class BlockHeaderTest {
     }
 
     @Test
-    void shouldCorrectlyReadTransactionOutputBytes() throws IOException {
+    void shouldCorrectlyReadBlockHeaderBytes() throws IOException {
         // when:
         var blockHeader = BlockHeader.readFromInputStream(new ByteArrayInputStream(blockHeaderBytes));
 
