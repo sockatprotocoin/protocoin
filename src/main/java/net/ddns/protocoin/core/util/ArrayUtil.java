@@ -13,8 +13,8 @@ public class ArrayUtil {
     }
 
     public static byte[] concat(byte[]... arrays) {
-        if (arrays.length < 1) {
-            throw new IllegalArgumentException("Can't provide less than 1 array");
+        if (arrays.length == 0) {
+            return new byte[0];
         }
 
         byte[] concatenated = arrays[0];
@@ -32,7 +32,7 @@ public class ArrayUtil {
     public static byte[] bytableListToArray(List<? extends Bytable> bytables) {
         return concat(
                 bytables.stream()
-                        .map(bytable -> bytable.getBytes())
+                        .map(Bytable::getBytes)
                         .collect(Collectors.toList())
                         .toArray(new byte[0][0])
         );

@@ -42,8 +42,7 @@ public class UTXOStorage {
             var matchingUnspentOutput = outputsForPubKeyHash.stream().filter(output ->
                     Arrays.equals(
                             output.getParent().getTxId(), transactionInput.getTxid().getBytes()) &&
-                            (output.getVout() == transactionInput.getVout().getBytes()
-                            )
+                            (output.getVout().equals(transactionInput.getVout()))
             ).findFirst();
 
             if (matchingUnspentOutput.isPresent()) {
@@ -51,7 +50,7 @@ public class UTXOStorage {
                 return;
             }
 
-            throw new IllegalArgumentException("No unspent output matching this input. Transaction invalid!");
         }
+        throw new IllegalArgumentException("No unspent output matching this input. Transaction invalid!");
     }
 }

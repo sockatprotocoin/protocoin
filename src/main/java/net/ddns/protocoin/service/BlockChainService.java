@@ -22,10 +22,10 @@ public class BlockChainService {
                     blocks.add(block);
                     var transactions = block.getTransactions();
                     transactions.forEach(transaction ->
-                            transaction.getTransactionOutputs().forEach(utxoStorage::addUnspentTransactionOutput)
+                            transaction.getTransactionInputs().forEach(utxoStorage::spentTransactionOutput)
                     );
                     transactions.forEach(transaction ->
-                            transaction.getTransactionInputs().forEach(utxoStorage::spentTransactionOutput)
+                            transaction.getTransactionOutputs().forEach(utxoStorage::addUnspentTransactionOutput)
                     );
                 }
             }

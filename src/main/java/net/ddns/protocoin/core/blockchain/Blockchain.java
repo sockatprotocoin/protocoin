@@ -2,12 +2,10 @@ package net.ddns.protocoin.core.blockchain;
 
 import net.ddns.protocoin.core.blockchain.block.Block;
 import net.ddns.protocoin.core.blockchain.block.BlockHeader;
+import net.ddns.protocoin.core.blockchain.data.Satoshi;
 import net.ddns.protocoin.core.blockchain.transaction.Transaction;
-import net.ddns.protocoin.core.blockchain.transaction.TransactionInput;
 import net.ddns.protocoin.core.blockchain.transaction.TransactionOutput;
 import net.ddns.protocoin.core.blockchain.transaction.signature.PayToPubKeyHash;
-import net.ddns.protocoin.core.blockchain.transaction.signature.ScriptSignature;
-import net.ddns.protocoin.core.blockchain.data.Satoshi;
 
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -37,17 +35,15 @@ public class Blockchain {
                 new BigInteger("200696f4", 16).toByteArray(),
                 new byte[4]
         );
-        var transactionInput = new TransactionInput(new byte[32], new byte[4]);
         var transactionOutput = new TransactionOutput(
                 Satoshi.valueOf(new BigInteger("5000000000", 10)),
                 PayToPubKeyHash.fromPublicKey(publicKey)
         );
         var transaction = new Transaction(
-                Collections.singletonList(transactionInput),
+                Collections.emptyList(),
                 Collections.singletonList(transactionOutput)
         );
 
-        transactionInput.setScriptSignature(new ScriptSignature(new byte[64], publicKey));
         return new Block(header, Collections.singletonList(transaction));
     }
 

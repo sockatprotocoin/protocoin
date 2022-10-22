@@ -1,6 +1,7 @@
 package net.ddns.protocoin.core.blockchain.transaction;
 
 import net.ddns.protocoin.core.blockchain.Bytable;
+import net.ddns.protocoin.core.blockchain.data.Bytes;
 import net.ddns.protocoin.core.blockchain.transaction.signature.LockingScript;
 import net.ddns.protocoin.core.blockchain.transaction.signature.PayToPubKeyHash;
 import net.ddns.protocoin.core.blockchain.data.Satoshi;
@@ -28,9 +29,9 @@ public class TransactionOutput implements Bytable {
         this.parent = parent;
     }
 
-    public byte[] getVout() {
+    public Bytes getVout() {
         var byteSize = BigInteger.valueOf(getParent().getTransactionOutputs().indexOf(this)).toByteArray();
-        return ArrayUtil.newByteArrayPaddedWithZeros(4, byteSize);
+        return Bytes.of(ArrayUtil.newByteArrayPaddedWithZeros(4, byteSize), 4);
     }
 
     public Transaction getParent() {
