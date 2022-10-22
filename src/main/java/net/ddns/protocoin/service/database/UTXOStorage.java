@@ -21,7 +21,7 @@ public class UTXOStorage {
     }
 
     public void addUnspentTransactionOutput(TransactionOutput transactionOutput) {
-        var pubKey = transactionOutput.getScript().getReceiver();
+        var pubKey = transactionOutput.getLockingScript().getReceiver();
         if (!map.containsKey(pubKey)) {
             map.put(pubKey, Collections.singletonList(transactionOutput));
         } else {

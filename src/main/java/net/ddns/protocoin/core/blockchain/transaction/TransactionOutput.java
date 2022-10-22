@@ -36,7 +36,15 @@ public class TransactionOutput implements Bytable {
         return parent;
     }
 
-    public LockingScript getScript() {
+    public Satoshi getAmount() {
+        return amount;
+    }
+
+    public VarInt getScriptSize() {
+        return scriptSize;
+    }
+
+    public LockingScript getLockingScript() {
         return script;
     }
 
