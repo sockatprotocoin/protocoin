@@ -26,6 +26,10 @@ public class Block implements Bytable {
         this.transactions = transactions;
     }
 
+    public BlockHeader getBlockHeader() {
+        return blockHeader;
+    }
+
     public List<Transaction> getTransactions() {
         return transactions;
     }

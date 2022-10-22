@@ -6,14 +6,18 @@ import net.ddns.protocoin.core.blockchain.data.Satoshi;
 import net.ddns.protocoin.core.blockchain.transaction.Transaction;
 import net.ddns.protocoin.core.blockchain.transaction.TransactionOutput;
 import net.ddns.protocoin.core.blockchain.transaction.signature.PayToPubKeyHash;
+import net.ddns.protocoin.core.util.ArrayUtil;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class Blockchain {
+public class Blockchain implements Bytable {
     private final List<Block> blockchain;
 
     public Blockchain(byte[] publicKey) {
@@ -61,5 +65,27 @@ public class Blockchain {
 
     public Block getBlock(int height) {
         return blockchain.get(height);
+    }
+
+    public List<Block> getBlockchain() {
+        return blockchain;
+    }
+
+    @Override
+    public byte[] getBytes() {
+        return ArrayUtil.concat(blockchain.stream().map(Block::getBytes).toArray(byte[][]::new));
+    }
+
+    public static Blockchain readFromInputStream(InputStream is) throws IOException {
+        var blocks = new ArrayList<Block>();
+
+        while (is.available() > 0) {
+            if (Arrays.equals(is.readNBytes(4), Block.MAGIC_BYTES.getBytes())) {
+                var block = Block.readFromInputStream(is);
+                blocks.add(block);
+            }
+        }
+
+        return new Blockchain(blocks);
     }
 }

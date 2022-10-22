@@ -12,12 +12,11 @@ import net.ddns.protocoin.core.blockchain.transaction.signature.ScriptSignature;
 import net.ddns.protocoin.core.ecdsa.Curve;
 import net.ddns.protocoin.core.util.ArrayUtil;
 import net.ddns.protocoin.core.util.Hash;
-import net.ddns.protocoin.service.BlockChainService;
-import net.ddns.protocoin.service.BlockChainSource;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.Collections;
@@ -45,7 +44,7 @@ class BlockchainTest {
     }
 
     @Test
-    void idk() {
+    void idk() throws IOException {
         var publicKey1 = new BigInteger(publicKeyHex1, 16).toByteArray();
         var publicKey2 = new BigInteger(publicKeyHex2, 16).toByteArray();
         var blockchain = new Blockchain(publicKey1);
@@ -71,6 +70,7 @@ class BlockchainTest {
                 Collections.singletonList(transactionInput),
                 Collections.singletonList(transactionOutput)
         );
+
         var transactionHash = Hash.sha256(transaction.getBytesWithoutSignatures());
         var signature = Curve.secp256k1.sign(privateKeyMock1, transactionHash);
 
@@ -80,17 +80,12 @@ class BlockchainTest {
         blockchain.addBlock(
                 newBlock
         );
+
+        var blockChainIs = new ByteArrayInputStream(ArrayUtil.concat(new BigInteger(blockchain.getBlock(0).getBytes()).toByteArray(), new BigInteger(newBlock.getBytes()).toByteArray()));
+        var blockChain = Blockchain.readFromInputStream(blockChainIs);
+
+        Assertions.assertArrayEquals(newBlock.getBytes(), blockChain.getBlock(1).getBytes());
+
     }
 
-    @Test
-    void idk2() {
-        var service = new BlockChainService();
-        var blockChainSourceMock = new BlockChainSource() {
-            @Override
-            public InputStream getBlockChainInputStream() {
-                return new ByteArrayInputStream(ArrayUtil.concat(new BigInteger(block1Hash, 16).toByteArray(), new BigInteger(block2Hash, 16).toByteArray()));
-            }
-        };
-        var blockChain = service.loadBlockChain(blockChainSourceMock);
-    }
 }

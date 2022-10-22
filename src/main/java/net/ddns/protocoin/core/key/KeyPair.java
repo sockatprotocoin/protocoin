@@ -6,6 +6,7 @@ import net.ddns.protocoin.core.util.Base58Check;
 import net.ddns.protocoin.core.util.Hash;
 
 import java.math.BigInteger;
+import java.util.Arrays;
 
 public class KeyPair {
     private final BigInteger privateKey;
@@ -23,7 +24,12 @@ public class KeyPair {
     }
 
     private String generateWallet(byte[] publickeyBytes) {
-        return Base58Check.encode(Hash.ripeMD160(Hash.sha256(publickeyBytes)));
+        var hash160 = Hash.ripeMD160(Hash.sha256(publickeyBytes));
+        var checksum = Arrays.copyOfRange (Hash.sha256(hash160,2),0,3);
+        var hash160WithChecksum = new byte[hash160.length + checksum.length];
+        System.arraycopy(hash160,0,hash160WithChecksum,0,hash160.length);
+        System.arraycopy(checksum,0,hash160WithChecksum,hash160.length,checksum.length);
+        return Base58Check.encode(hash160WithChecksum);
     }
 
     public BigInteger getPrivateKey() {
