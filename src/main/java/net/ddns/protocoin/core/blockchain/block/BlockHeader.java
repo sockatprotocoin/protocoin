@@ -10,20 +10,20 @@ import java.math.BigInteger;
 import java.util.Arrays;
 
 public class BlockHeader implements Bytable {
-    private final Bytes previousBlockHash = new Bytes(32);
-    private final Bytes merkleRoot = new Bytes(32);
-    private final Bytes timestamp = new Bytes(4);
-    private final Bytes targetCompressed = new Bytes(4);
-    private final Bytes nonce = new Bytes(4);
+    private final Bytes previousBlockHash;
+    private final Bytes merkleRoot;
+    private final Bytes timestamp;
+    private final Bytes targetCompressed;
+    private final Bytes nonce;
 
     private final BigInteger target;
 
     public BlockHeader(byte[] previousBlockHash, byte[] merkleRoot, byte[] timestamp, byte[] targetCompressed, byte[] nonce) {
-        this.previousBlockHash.setData(previousBlockHash);
-        this.merkleRoot.setData(merkleRoot);
-        this.timestamp.setData(timestamp);
-        this.targetCompressed.setData(targetCompressed);
-        this.nonce.setData(nonce);
+        this.previousBlockHash = Bytes.of(previousBlockHash, 32);
+        this.merkleRoot = Bytes.of(merkleRoot, 32);
+        this.timestamp = Bytes.of(timestamp, 4);
+        this.targetCompressed = Bytes.of(targetCompressed, 4);
+        this.nonce = Bytes.of(nonce, 4);
 
         this.target = calculateTarget(targetCompressed);
     }
@@ -36,6 +36,26 @@ public class BlockHeader implements Bytable {
         System.arraycopy(coefficient, 0, targetBytes, 0, coefficient.length);
 
         return new BigInteger(targetBytes);
+    }
+
+    public Bytes getPreviousBlockHash() {
+        return previousBlockHash;
+    }
+
+    public Bytes getMerkleRoot() {
+        return merkleRoot;
+    }
+
+    public Bytes getTimestamp() {
+        return timestamp;
+    }
+
+    public Bytes getTargetCompressed() {
+        return targetCompressed;
+    }
+
+    public Bytes getNonce() {
+        return nonce;
     }
 
     public BigInteger getTarget() {
