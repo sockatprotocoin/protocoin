@@ -14,7 +14,6 @@ public class TransactionInput implements Bytable {
     // hash of previous transaction data
     private final Bytes txid = new Bytes(32);
     private final Bytes vout = new Bytes(4);
-    private VarInt scriptSignatureSize;
     private ScriptSignature scriptSignature;
 
     public TransactionInput(byte[] txid, byte[] vout) {
@@ -27,7 +26,6 @@ public class TransactionInput implements Bytable {
     }
 
     public void setScriptSignature(ScriptSignature scriptSignature) {
-        this.scriptSignatureSize = new VarInt(scriptSignature.getBytes().length);
         this.scriptSignature = scriptSignature;
     }
 
@@ -38,22 +36,20 @@ public class TransactionInput implements Bytable {
     public Bytes getVout() {
         return vout;
     }
-
     public byte[] getBytesWithoutSignature() {
         return ArrayUtil.concat(txid, vout);
     }
 
     @Override
     public byte[] getBytes() {
-        return ArrayUtil.concat(txid.getBytes(), vout.getBytes(), scriptSignatureSize.getBytes(), scriptSignature.getBytes());
+        return ArrayUtil.concat(txid.getBytes(), vout.getBytes(), scriptSignature.getBytes());
     }
 
     public static TransactionInput readFromInputStream(InputStream is) throws IOException {
         var txid = is.readNBytes(32);
         var vout = is.readNBytes(4);
-        var scriptSignatureSize = VarInt.readFromIs(is);
-        var scriptBytes = is.readNBytes(scriptSignatureSize.integerValue());
-        var scriptSignature = new ScriptSignature(Arrays.copyOfRange(scriptBytes, 0, 32), Arrays.copyOfRange(scriptBytes, 32, 64));
+        var scriptBytes = is.readNBytes(128);
+        var scriptSignature = new ScriptSignature(Arrays.copyOfRange(scriptBytes, 0, 64), Arrays.copyOfRange(scriptBytes, 64, 128));
 
         var input = new TransactionInput(txid, vout);
         input.setScriptSignature(scriptSignature);
