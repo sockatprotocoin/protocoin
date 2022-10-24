@@ -23,9 +23,9 @@ public class KeyPair {
         this.wallet = generateWallet(publicKey.toByteArray());
     }
 
-    private String generateWallet(byte[] publickeyBytes) {
-        var hash160 = Hash.ripeMD160(Hash.sha256(publickeyBytes));
-        var checksum = Arrays.copyOfRange (Hash.sha256(hash160,2),0,3);
+    private String generateWallet(byte[] publicKeyBytes) {
+        var hash160 = Hash.ripeMD160(Hash.sha256(publicKeyBytes));
+        var checksum = Arrays.copyOfRange (Hash.sha256(hash160,2),0,4);
         var hash160WithChecksum = new byte[hash160.length + checksum.length];
         System.arraycopy(hash160,0,hash160WithChecksum,0,hash160.length);
         System.arraycopy(checksum,0,hash160WithChecksum,hash160.length,checksum.length);
