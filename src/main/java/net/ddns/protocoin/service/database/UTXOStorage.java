@@ -17,8 +17,8 @@ public class UTXOStorage {
         map = new HashMap<>();
     }
 
-    public List<TransactionOutput> getUTXOs(byte[] publicKey) {
-        var pubKeyBytes = Bytes.of(publicKey, 20);
+    public List<TransactionOutput> getUTXOs(byte[] publicKeyHash) {
+        var pubKeyBytes = Bytes.of(publicKeyHash, 20);
         if (!map.containsKey(pubKeyBytes)) {
             map.put(pubKeyBytes, new ArrayList<>());
         }
