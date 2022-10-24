@@ -18,7 +18,11 @@ public class UTXOStorage {
     }
 
     public List<TransactionOutput> getUTXOs(byte[] publicKey) {
-        return map.get(publicKey);
+        var pubKeyBytes = Bytes.of(publicKey, 20);
+        if (!map.containsKey(pubKeyBytes)) {
+            map.put(pubKeyBytes, new ArrayList<>());
+        }
+        return map.get(pubKeyBytes);
     }
 
     public void addUnspentTransactionOutput(TransactionOutput transactionOutput) {

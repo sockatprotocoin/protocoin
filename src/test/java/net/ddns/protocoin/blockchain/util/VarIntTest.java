@@ -20,7 +20,7 @@ class VarIntTest {
 
     @Test
     void twoByteValueTest() {
-        var expected = "fd00fc";
+        var expected = "FD00FC";
 
         var varInt = new VarInt(252);
         var bytes = varInt.getBytes();
@@ -31,7 +31,7 @@ class VarIntTest {
 
     @Test
     void threeByteValueTest() {
-        var expected = "fe00f42400";
+        var expected = "FE00F42400";
 
         var varInt = new VarInt(16_000_000);
         var bytes = varInt.getBytes();
@@ -42,7 +42,7 @@ class VarIntTest {
 
     @Test
     void fourByteValueTest() {
-        var expected = "fe12345678";
+        var expected = "FE12345678";
 
         var varInt = new VarInt(305_419_896);
         var bytes = varInt.getBytes();

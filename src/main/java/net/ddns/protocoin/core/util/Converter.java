@@ -14,7 +14,7 @@ public class Converter {
             sb.append(hexRepresentation);
         }
 
-        return sb.toString();
+        return sb.toString().toUpperCase();
     }
 
     public static byte[] hexStringToByteArray(String s) {
