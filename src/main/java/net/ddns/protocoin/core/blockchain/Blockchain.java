@@ -40,7 +40,7 @@ public class Blockchain implements Bytable {
                 new byte[4]
         );
         var transactionOutput = new TransactionOutput(
-                Satoshi.valueOf(new BigInteger("5000000000", 10)),
+                Satoshi.valueOf(50.0),
                 PayToPubKeyHash.fromPublicKey(publicKey)
         );
         var transaction = new Transaction(

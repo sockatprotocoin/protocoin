@@ -63,7 +63,7 @@ class BlockchainTest {
                 ArrayUtil.newByteArrayPaddedWithZeros(4, BigInteger.ZERO.toByteArray())
         );
         var transactionOutput = new TransactionOutput(
-                Satoshi.valueOf(new BigInteger("5000000000", 10)),
+                Satoshi.valueOf(50.0),
                 PayToPubKeyHash.fromPublicKey(publicKey2)
         );
         var transaction = new Transaction(

@@ -37,8 +37,8 @@ public class UTXOStorageTest {
         ECPoint publicKeyMock = new ECPoint(new BigInteger("661BA57FED0D115222E30FE7E9509325EE30E7E284D3641E6FB5E67368C2DB18", 16), new BigInteger("5ADA8EFC5DC43AF6BF474A41ED6237573DC4ED693D49102C42FFC88510500799", 16));
         var publicKeyHash = "D0ECF5C0DCF3797201379ED48F2DE37002FE823C"; //Hash.ripeMD160(Hash.sha256(publicKeyMock.toByteArray()));
         LockingScript lockingScript = PayToPubKeyHash.fromPublicKey(publicKeyMock.toByteArray());
-        TransactionOutput transactionOutput1 = new TransactionOutput(Satoshi.valueOf(BigInteger.valueOf(10)),lockingScript);
-        TransactionOutput transactionOutput2 = new TransactionOutput(Satoshi.valueOf(BigInteger.valueOf(20)),lockingScript);
+        TransactionOutput transactionOutput1 = new TransactionOutput(Satoshi.valueOf(10.0),lockingScript);
+        TransactionOutput transactionOutput2 = new TransactionOutput(Satoshi.valueOf(20.0),lockingScript);
 
         List<TransactionOutput> transactionOutputs = new ArrayList<>();
         transactionOutputs.add(transactionOutput1);
@@ -75,7 +75,7 @@ public class UTXOStorageTest {
                 ArrayUtil.newByteArrayPaddedWithZeros(4, BigInteger.ZERO.toByteArray())
         );
         var transactionOutput = new TransactionOutput(
-                Satoshi.valueOf(new BigInteger("5000000000", 10)),
+                Satoshi.valueOf(10.0),
                 PayToPubKeyHash.fromPublicKey(publicKey2)
         );
         var transaction = new Transaction(
