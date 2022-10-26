@@ -59,7 +59,7 @@ public class Blockchain implements Bytable {
         // validate inputs
     }
 
-    public Block getLastBlock() {
+    public Block getTopBlock() {
         return blockchain.get(blockchain.size() - 1);
     }
 

@@ -49,7 +49,7 @@ class BlockchainTest {
         var publicKey2 = new BigInteger(publicKeyHex2, 16).toByteArray();
         var blockchain = new Blockchain(publicKey1);
 
-        var topBlock = blockchain.getLastBlock();
+        var topBlock = blockchain.getTopBlock();
 
         var header = new BlockHeader(
                 topBlock.getHash(),
@@ -81,11 +81,15 @@ class BlockchainTest {
                 newBlock
         );
 
-        var blockChainIs = new ByteArrayInputStream(ArrayUtil.concat(new BigInteger(blockchain.getBlock(0).getBytes()).toByteArray(), new BigInteger(newBlock.getBytes()).toByteArray()));
+        var blockChainIs = new ByteArrayInputStream(
+                ArrayUtil.concat(
+                        new BigInteger(blockchain.getBlock(0).getBytes()).toByteArray(),
+                        new BigInteger(newBlock.getBytes()).toByteArray()
+                )
+        );
+
         var blockChain = Blockchain.readFromInputStream(blockChainIs);
 
         Assertions.assertArrayEquals(newBlock.getBytes(), blockChain.getBlock(1).getBytes());
-
     }
-
 }
