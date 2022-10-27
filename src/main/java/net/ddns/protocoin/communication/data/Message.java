@@ -2,12 +2,12 @@ package net.ddns.protocoin.communication.data;
 
 public class Message {
     private ReqType reqType;
-    private String content;
+    private byte[] content;
 
     public Message() {
     }
 
-    public Message(ReqType reqType, String content) {
+    public Message(ReqType reqType, byte[] content) {
         this.reqType = reqType;
         this.content = content;
     }
@@ -16,7 +16,7 @@ public class Message {
         return reqType;
     }
 
-    public String getContent() {
+    public byte[] getContent() {
         return content;
     }
 }

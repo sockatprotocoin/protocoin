@@ -11,6 +11,7 @@ public class MessageMiddleware implements DataMiddleware<InputStream, Message> {
 
     @Override
     public Message handle(InputStream inputStream) throws IOException {
-        return objectMapper.readValue(inputStream, Message.class);
+        var bytes = inputStream.readNBytes(inputStream.available());
+        return objectMapper.readValue(bytes, Message.class);
     }
 }

@@ -57,4 +57,8 @@ public class UTXOStorage {
         }
         throw new IllegalArgumentException("No unspent output matching this input. Transaction invalid!");
     }
+
+    public void clear() {
+        map.clear();
+    }
 }

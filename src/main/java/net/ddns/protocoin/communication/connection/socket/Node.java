@@ -3,6 +3,7 @@ package net.ddns.protocoin.communication.connection.socket;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.ddns.protocoin.communication.data.Message;
 import net.ddns.protocoin.communication.data.ReqType;
+import net.ddns.protocoin.service.BlockChainService;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
@@ -15,10 +16,15 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.stream.Collectors;
 
 public class Node {
-    private final static Set<SocketThread> socketThreads = new CopyOnWriteArraySet<>();
     private final static Logger logger = Logger.getLogger(Node.class.getName());
+    private final Set<SocketThread> socketThreads = new CopyOnWriteArraySet<>();
+    private final BlockChainService blockChainService;
 
-    public static void startListening(int port) {
+    public Node(BlockChainService blockChainService) {
+        this.blockChainService = blockChainService;
+    }
+
+    public void startListening(int port) {
         new Thread(() -> {
             ServerSocket serverSocket = null;
             Socket socket = null;
@@ -39,31 +45,35 @@ public class Node {
         }).start();
     }
 
-    public static void connectToNodes(List<InetSocketAddress> inetSocketAddresses) throws IOException {
+    public void connectToNodes(List<InetSocketAddress> inetSocketAddresses) throws IOException {
         for (InetSocketAddress inetSocketAddress : inetSocketAddresses) {
             connectToNode(inetSocketAddress);
         }
     }
 
-    public static void connectToNode(InetSocketAddress inetSocketAddress) throws IOException {
+    public void connectToNode(InetSocketAddress inetSocketAddress) throws IOException {
         var socket = new Socket();
         socket.connect(inetSocketAddress, 1000);
         socket.getOutputStream().write(new ObjectMapper().writeValueAsBytes(
                 new Message(
                         ReqType.ASK_FOR_CONNECTED_NODES,
-                        ""
+                        new byte[0]
                 )
         ));
         createThreadForConnection(socket);
     }
 
-    private static void createThreadForConnection(Socket socket) {
-        var newSocketThread = new SocketThread(socket);
+    public void disconnectNode(SocketThread socketThread) {
+        socketThreads.remove(socketThread);
+    }
+
+    private void createThreadForConnection(Socket socket) {
+        var newSocketThread = new SocketThread(this, blockChainService, socket);
         socketThreads.add(newSocketThread);
         newSocketThread.start();
     }
 
-    public static List<InetSocketAddress> getNodesAddresses() {
+    public List<InetSocketAddress> getNodesAddresses() {
         return socketThreads.stream()
                 .map(SocketThread::getSocketAddress)
                 .collect(Collectors.toList());
