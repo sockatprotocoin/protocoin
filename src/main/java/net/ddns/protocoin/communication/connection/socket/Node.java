@@ -1,5 +1,6 @@
 package net.ddns.protocoin.communication.connection.socket;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import net.ddns.protocoin.communication.data.Message;
 import net.ddns.protocoin.communication.data.ReqType;
 import org.apache.log4j.Logger;
@@ -47,18 +48,18 @@ public class Node {
     public static void connectToNode(InetSocketAddress inetSocketAddress) throws IOException {
         var socket = new Socket();
         socket.connect(inetSocketAddress, 1000);
+        socket.getOutputStream().write(new ObjectMapper().writeValueAsBytes(
+                new Message(
+                        ReqType.ASK_FOR_CONNECTED_NODES,
+                        ""
+                )
+        ));
         createThreadForConnection(socket);
     }
 
     private static void createThreadForConnection(Socket socket) {
         var newSocketThread = new SocketThread(socket);
         socketThreads.add(newSocketThread);
-        newSocketThread.sendMessage(
-                new Message(
-                        ReqType.ASK_FOR_CONNECTED_NODES,
-                        ""
-                )
-        );
         newSocketThread.start();
     }
 

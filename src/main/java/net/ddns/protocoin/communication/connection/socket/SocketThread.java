@@ -8,8 +8,7 @@ import net.ddns.protocoin.communication.data.Message;
 import net.ddns.protocoin.communication.data.ReqType;
 import org.apache.log4j.Logger;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.List;
@@ -18,11 +17,20 @@ public class SocketThread extends Thread {
     private final Logger logger = Logger.getLogger(SocketThread.class.getName());
     private final Socket socket;
     private final DataMiddleware<InputStream, Message> dataMiddleware;
+    private BufferedReader in;
+    private PrintWriter out;
+
     private boolean running;
 
     public SocketThread(Socket socket) {
         this.socket = socket;
         this.dataMiddleware = new MessageMiddleware();
+        try {
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            out = new PrintWriter(socket.getOutputStream(), true);
+        } catch (IOException e) {
+            return;
+        }
         this.running = true;
     }
 
@@ -30,19 +38,12 @@ public class SocketThread extends Thread {
     public void run() {
         super.run();
         while (running) {
-            InputStream inputStream;
             try {
-                inputStream = socket.getInputStream();
-            } catch (IOException e) {
-                logSocketInfo("connection closed unexpectedly");
-                exit();
-                break;
-            }
-            try {
-                if (inputStream.available() > 0) {
-                    var message = dataMiddleware.handle(inputStream);
+                if (in.ready()) {
+                    var message = dataMiddleware.handle(new ByteArrayInputStream(in.readLine().getBytes()));
                     switch (message.getReqType()) {
                         case ASK_FOR_CONNECTED_NODES:
+                            System.out.println("ASK_FOR_CONNECTED_NODES");
                             sendMessage(new Message(
                                     ReqType.RETURN_CONNECTED_NODES,
                                     new ObjectMapper().writeValueAsString(Node.getNodesAddresses())
@@ -60,12 +61,15 @@ public class SocketThread extends Thread {
                             exit();
                             break;
                     }
-                    logSocketInfo("message received (" + message + ")");
+                    System.out.println(message.getReqType().name());
+//                    logSocketInfo("message received (" + message.getReqType().name() + ")");
                 }
             } catch (IOException e) {
-                logSocketInfo("failed reading message from input stream");
+                System.out.println("failed reading message from input stream");
+                break;
             }
         }
+        System.out.println("thread ended");
     }
 
     public InetSocketAddress getSocketAddress() {
@@ -83,7 +87,8 @@ public class SocketThread extends Thread {
 
     public void sendMessage(Message message) {
         try {
-            socket.getOutputStream().write(new ObjectMapper().writeValueAsBytes(message));
+            out.write(new ObjectMapper().writeValueAsString(message));
+            System.out.println("sended message");
         } catch (IOException e) {
             logSocketInfo("cannot send message");
         }
