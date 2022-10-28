@@ -1,10 +1,9 @@
 package net.ddns.protocoin.core.script;
 
-import net.ddns.protocoin.core.blockchain.transaction.Transaction;
-import net.ddns.protocoin.core.ecdsa.Signature;
-import net.ddns.protocoin.core.util.Hash;
 import net.ddns.protocoin.core.ecdsa.Curve;
 import net.ddns.protocoin.core.ecdsa.ECPoint;
+import net.ddns.protocoin.core.ecdsa.Signature;
+import net.ddns.protocoin.core.util.Hash;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

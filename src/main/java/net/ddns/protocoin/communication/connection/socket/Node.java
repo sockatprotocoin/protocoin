@@ -26,12 +26,13 @@ public class Node {
         this.blockChainService = blockChainService;
         this.miningService = miningService;
     }
+
     public void startMining() {
         new Thread(() -> {
             while (true) {
-                if(miningService.getNumberOfWaitingTransactions() >=2){
+                if (miningService.getNumberOfWaitingTransactions() >= 2) {
                     var newBlock = miningService.startMining();
-                    broadcast(new Message(ReqType.NEW_BLOCK,newBlock.getBytes()));
+                    broadcast(new Message(ReqType.NEW_BLOCK, newBlock.getBytes()));
                 }
                 try {
                     Thread.sleep(500);

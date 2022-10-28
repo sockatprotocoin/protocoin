@@ -93,8 +93,9 @@ public class SocketThread extends Thread {
                             blockChainService.loadBlockChainToUTXOStorage(blockchain);
                             break;
                         case NEW_TRANSACTION:
-                            var transaction = mapper.readValue(message.getContent(), Transaction.class);
+                            var transaction = Transaction.readFromInputStream(new ByteArrayInputStream(message.getContent()));
                             miningService.registerNewTransaction(transaction);
+                            break;
                         case CLOSE_CONNECTION:
                             exit();
                             break;
