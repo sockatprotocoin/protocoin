@@ -25,7 +25,6 @@ public class Satoshi implements Bytable {
 
         return new Satoshi(byteArray);
     }
-
     @Override
     public byte[] getBytes() {
         return bytes.getBytes();

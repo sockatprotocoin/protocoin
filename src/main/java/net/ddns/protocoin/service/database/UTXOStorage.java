@@ -5,10 +5,7 @@ import net.ddns.protocoin.core.blockchain.transaction.TransactionInput;
 import net.ddns.protocoin.core.blockchain.transaction.TransactionOutput;
 import net.ddns.protocoin.core.util.Hash;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class UTXOStorage {
     private final HashMap<Bytes, List<TransactionOutput>> map;
@@ -42,23 +39,27 @@ public class UTXOStorage {
         var pubKeyHash = Hash.ripeMD160(Hash.sha256(transactionInput.getScriptSignature().getPublicKey().getBytes()));
         var pubKeyBytes = Bytes.of(pubKeyHash, 20);
         var outputsForPubKeyHash = map.get(pubKeyBytes);
-        if (outputsForPubKeyHash != null) {
-            var matchingUnspentOutput = outputsForPubKeyHash.stream().filter(output ->
+
+        getMatchingUTXOForTransactionInput(transactionInput).ifPresent(outputsForPubKeyHash::remove);
+    }
+    public void clear() {
+        map.clear();
+    }
+
+    public Optional<TransactionOutput> getMatchingUTXOForTransactionInput(TransactionInput transactionInput){
+        var pubKeyHash = Hash.ripeMD160(Hash.sha256(transactionInput.getScriptSignature().getPublicKey().getBytes()));
+        var pubKeyBytes = Bytes.of(pubKeyHash, 20);
+        var outputsForPubKeyHash = map.get(pubKeyBytes);
+
+        if(outputsForPubKeyHash == null){
+            return Optional.empty();
+        }
+        else {
+            return outputsForPubKeyHash.stream().filter(output ->
                     Arrays.equals(
                             output.getParent().getTxId(), transactionInput.getTxid().getBytes()) &&
                             (output.getVout().equals(transactionInput.getVout()))
             ).findFirst();
-
-            if (matchingUnspentOutput.isPresent()) {
-                outputsForPubKeyHash.remove(matchingUnspentOutput.get());
-                return;
-            }
-
         }
-        throw new IllegalArgumentException("No unspent output matching this input. Transaction invalid!");
-    }
-
-    public void clear() {
-        map.clear();
     }
 }

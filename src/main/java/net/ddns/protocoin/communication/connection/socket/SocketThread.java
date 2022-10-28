@@ -143,4 +143,5 @@ public class SocketThread extends Thread {
     private void logSocketInfo(String info) {
         logger.info(socket.getInetAddress() + ":" + socket.getPort() + ": " + info);
     }
+
 }
