@@ -7,8 +7,10 @@ import net.ddns.protocoin.communication.connection.MessageMiddleware;
 import net.ddns.protocoin.communication.data.Message;
 import net.ddns.protocoin.communication.data.ReqType;
 import net.ddns.protocoin.core.blockchain.Blockchain;
+import net.ddns.protocoin.core.blockchain.transaction.Transaction;
 import net.ddns.protocoin.core.util.ArrayUtil;
 import net.ddns.protocoin.service.BlockChainService;
+import net.ddns.protocoin.service.MiningService;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -24,16 +26,17 @@ public class SocketThread extends Thread {
     private static final Logger logger = LogManager.getLogger(SocketThread.class);
     private final Node node;
     private final BlockChainService blockChainService;
+    private final MiningService miningService;
     private final Socket socket;
     private final DataMiddleware<InputStream, Message> dataMiddleware;
     private OutputStream out;
 
-
     private boolean running;
 
-    public SocketThread(Node node, BlockChainService blockChainService, Socket socket) {
+    public SocketThread(Node node, BlockChainService blockChainService, MiningService miningService, Socket socket) {
         this.node = node;
         this.blockChainService = blockChainService;
+        this.miningService = miningService;
         this.socket = socket;
         this.dataMiddleware = new MessageMiddleware();
         try {
@@ -48,46 +51,50 @@ public class SocketThread extends Thread {
     @Override
     public void run() {
         super.run();
-        InputStream in;
-        try {
-            in = socket.getInputStream();
-        } catch (IOException e) {
-//            logSocketInfo("can't get input stream from socket");
-            System.out.println("can't get input stream from socket");
-            return;
-        }
+        var mapper = new ObjectMapper();
         while (running) {
+            InputStream in;
+            try {
+                in = socket.getInputStream();
+            } catch (IOException e) {
+    //            logSocketInfo("can't get input stream from socket");
+                System.out.println("can't get input stream from socket");
+                return;
+            }
             try {
                 if (in.available() > 0) {
                     var message = dataMiddleware.handle(in);
                     switch (message.getReqType()) {
-                        case ASK_FOR_CONNECTED_NODES:
+                        case CONNECTED_NODES_REQUEST:
                             sendMessage(
                                     new Message(
-                                            ReqType.RETURN_CONNECTED_NODES,
-                                            new ObjectMapper().writeValueAsBytes(node.getNodesAddresses())
+                                            ReqType.CONNECTED_NODES_RESPONSE,
+                                            mapper.writeValueAsBytes(node.getNodesAddresses())
                                     )
                             );
                             break;
-                        case RETURN_CONNECTED_NODES:
-                            var addresses = new ObjectMapper().readValue(
+                        case CONNECTED_NODES_RESPONSE:
+                            var addresses = mapper.readValue(
                                     message.getContent(),
                                     new TypeReference<List<InetSocketAddress>>() {}
                             );
                             node.connectToNodes(addresses);
                             break;
-                        case ASK_FOR_BLOCKCHAIN:
+                        case BLOCKCHAIN_REQUEST:
                             sendMessage(
                                     new Message(
-                                            ReqType.RETURN_BLOCKCHAIN,
+                                            ReqType.BLOCKCHAIN_RESPONSE,
                                             blockChainService.getBlockchain().getBytes()
                                     )
                             );
                             break;
-                        case RETURN_BLOCKCHAIN:
+                        case BLOCKCHAIN_RESPONSE:
                             var blockchain = Blockchain.readFromInputStream(new ByteArrayInputStream(message.getContent()));
                             blockChainService.loadBlockChainToUTXOStorage(blockchain);
                             break;
+                        case NEW_TRANSACTION:
+                            var transaction = mapper.readValue(message.getContent(), Transaction.class);
+                            miningService.registerNewTransaction(transaction);
                         case CLOSE_CONNECTION:
                             exit();
                             break;
@@ -129,6 +136,7 @@ public class SocketThread extends Thread {
         } catch (IOException e) {
 //            logSocketInfo("cannot send message");
             System.out.println("cannot send message");
+            exit();
         }
     }
 

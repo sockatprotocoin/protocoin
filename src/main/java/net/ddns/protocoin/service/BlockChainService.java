@@ -5,7 +5,11 @@ import net.ddns.protocoin.service.database.UTXOStorage;
 
 public class BlockChainService {
     private Blockchain blockchain;
-    private final UTXOStorage utxoStorage = new UTXOStorage();
+    private final UTXOStorage utxoStorage;
+
+    public BlockChainService(UTXOStorage utxoStorage) {
+        this.utxoStorage = utxoStorage;
+    }
 
     public void loadBlockChainToUTXOStorage(Blockchain blockchain) {
         this.blockchain = blockchain;

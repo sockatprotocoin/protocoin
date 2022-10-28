@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import net.ddns.protocoin.communication.data.Message;
 import net.ddns.protocoin.communication.data.ReqType;
 import net.ddns.protocoin.service.BlockChainService;
+import net.ddns.protocoin.service.MiningService;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
@@ -19,9 +20,11 @@ public class Node {
     private final static Logger logger = Logger.getLogger(Node.class.getName());
     private final Set<SocketThread> socketThreads = new CopyOnWriteArraySet<>();
     private final BlockChainService blockChainService;
+    private final MiningService miningService;
 
-    public Node(BlockChainService blockChainService) {
+    public Node(BlockChainService blockChainService, MiningService miningService) {
         this.blockChainService = blockChainService;
+        this.miningService = miningService;
     }
 
     public void startListening(int port) {
@@ -45,9 +48,13 @@ public class Node {
         }).start();
     }
 
-    public void connectToNodes(List<InetSocketAddress> inetSocketAddresses) throws IOException {
+    public void connectToNodes(List<InetSocketAddress> inetSocketAddresses) {
         for (InetSocketAddress inetSocketAddress : inetSocketAddresses) {
-            connectToNode(inetSocketAddress);
+            try {
+                connectToNode(inetSocketAddress);
+            } catch (IOException e) {
+                System.out.println("Cannot connect to node: " + inetSocketAddress.getAddress().getHostAddress());
+            }
         }
     }
 
@@ -56,7 +63,7 @@ public class Node {
         socket.connect(inetSocketAddress, 1000);
         socket.getOutputStream().write(new ObjectMapper().writeValueAsBytes(
                 new Message(
-                        ReqType.ASK_FOR_CONNECTED_NODES,
+                        ReqType.CONNECTED_NODES_REQUEST,
                         new byte[0]
                 )
         ));
@@ -68,7 +75,7 @@ public class Node {
     }
 
     private void createThreadForConnection(Socket socket) {
-        var newSocketThread = new SocketThread(this, blockChainService, socket);
+        var newSocketThread = new SocketThread(this, blockChainService, miningService, socket);
         socketThreads.add(newSocketThread);
         newSocketThread.start();
     }
