@@ -1,6 +1,7 @@
 package net.ddns.protocoin.service;
 
 import net.ddns.protocoin.core.blockchain.Blockchain;
+import net.ddns.protocoin.core.blockchain.block.Block;
 import net.ddns.protocoin.service.database.UTXOStorage;
 
 public class BlockChainService {
@@ -28,4 +29,5 @@ public class BlockChainService {
     public Blockchain getBlockchain() {
         return blockchain;
     }
+
 }

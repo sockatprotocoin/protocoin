@@ -1,4 +1,4 @@
-package net.ddns.protocoin.key;
+package net.ddns.protocoin.core.key;
 
 import net.ddns.protocoin.core.ecdsa.Curve;
 import net.ddns.protocoin.core.ecdsa.ECPoint;

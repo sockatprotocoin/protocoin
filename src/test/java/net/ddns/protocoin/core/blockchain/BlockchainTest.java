@@ -1,4 +1,4 @@
-package net.ddns.protocoin.blockchain;
+package net.ddns.protocoin.core.blockchain;
 
 import net.ddns.protocoin.core.blockchain.Blockchain;
 import net.ddns.protocoin.core.blockchain.block.Block;

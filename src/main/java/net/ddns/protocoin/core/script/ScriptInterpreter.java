@@ -13,15 +13,15 @@ import java.util.Arrays;
 import java.util.Stack;
 
 public class ScriptInterpreter {
-    Stack<byte[]> stack = new Stack<>();
     private final Curve curve;
 
-    public ScriptInterpreter(Curve curve, byte[] script, Transaction transaction) throws IOException {
+    public ScriptInterpreter(Curve curve) {
         this.curve = curve;
-        parse(script, transaction);
     }
 
-    private void parse(byte[] script, Transaction transaction) throws IOException {
+    public boolean verify(byte[] script, byte[] transactionBytes) throws IOException {
+        Stack<byte[]> stack = new Stack<>();
+
         var scriptStream = new ByteArrayInputStream(script);
         while (scriptStream.available() > 0) {
             var b = scriptStream.read();
@@ -56,11 +56,13 @@ public class ScriptInterpreter {
                                     new BigInteger(Arrays.copyOfRange(publicKey, 0, 32)),
                                     new BigInteger(Arrays.copyOfRange(publicKey, 32, 65))
                             ),
-                            transaction.getBytes()
+                            transactionBytes
                     );
 
                     stack.push(valid ? new byte[]{1} : new byte[]{0});
             }
         }
+
+        return Arrays.equals(stack.get(0), new byte[]{1});
     }
 }

@@ -1,4 +1,4 @@
-package net.ddns.protocoin.ecdsa;
+package net.ddns.protocoin.core.ecdsa;
 
 import net.ddns.protocoin.core.ecdsa.Curve;
 import net.ddns.protocoin.core.ecdsa.Signature;

@@ -1,4 +1,4 @@
-package net.ddns.protocoin.util;
+package net.ddns.protocoin.core.util;
 
 import net.ddns.protocoin.core.util.Base58;
 import org.junit.jupiter.api.Test;

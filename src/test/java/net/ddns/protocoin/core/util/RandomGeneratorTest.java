@@ -1,4 +1,4 @@
-package net.ddns.protocoin.util;
+package net.ddns.protocoin.core.util;
 
 import net.ddns.protocoin.core.util.RandomGenerator;
 import org.junit.jupiter.api.BeforeEach;

@@ -1,4 +1,4 @@
-package net.ddns.protocoin.blockchain.util;
+package net.ddns.protocoin.core.blockchain;
 
 import net.ddns.protocoin.core.blockchain.data.VarInt;
 import net.ddns.protocoin.core.util.Converter;
