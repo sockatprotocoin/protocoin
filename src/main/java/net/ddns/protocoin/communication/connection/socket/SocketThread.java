@@ -100,7 +100,7 @@ public class SocketThread extends Thread {
                         case NEW_BLOCK:
                             var block = Block.readFromInputStream(new ByteArrayInputStream(message.getContent()));
                             if(!blockChainService.addBlock(block)){
-                                node.broadcast(new Message(ReqType.NEW_BLOCK, new byte[]{}));
+                                node.broadcast(new Message(ReqType.BLOCKCHAIN_REQUEST, new byte[]{}));
                             }
                             break;
                         case CLOSE_CONNECTION:

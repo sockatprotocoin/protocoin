@@ -22,7 +22,7 @@ public class PayToPubKeyHash extends LockingScript {
     }
 
     public static PayToPubKeyHash loadScript(byte[] script) {
-        var pubKeyHash = Arrays.copyOfRange(script, 2, 22);
+        var pubKeyHash = Arrays.copyOfRange(script, 3, 23);
         return new PayToPubKeyHash(script, pubKeyHash);
     }
 
