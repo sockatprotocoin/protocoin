@@ -67,12 +67,12 @@ public class ScriptInterpreter {
                     var signature = stack.pop();
                     var valid = curve.verify(
                             new Signature(
-                                    new BigInteger(Arrays.copyOfRange(signature, 0, 32)),
-                                    new BigInteger(Arrays.copyOfRange(signature, 32, 64))
+                                    new BigInteger(1, Arrays.copyOfRange(signature, 0, 32)),
+                                    new BigInteger(1, Arrays.copyOfRange(signature, 32, 64))
                             ),
                             new ECPoint(
-                                    new BigInteger(Arrays.copyOfRange(publicKey, 0, 32)),
-                                    new BigInteger(Arrays.copyOfRange(publicKey, 32, 64))
+                                    new BigInteger(1, Arrays.copyOfRange(publicKey, 0, 32)),
+                                    new BigInteger(1, Arrays.copyOfRange(publicKey, 32, 64))
                             ),
                             transactionBytes
                     );

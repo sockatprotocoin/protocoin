@@ -80,7 +80,7 @@ public class MiningService {
                 ByteBuffer.allocate(4).putInt((int) (System.currentTimeMillis() / 1000)).array();
         var targetCompressed = Converter.hexStringToByteArray("200696F4");
         BlockHeader blockHeader = new BlockHeader(previousBlockHash,
-                new byte[]{32}, timestamp, targetCompressed, new byte[4]);
+                new byte[32], timestamp, targetCompressed, new byte[4]);
         return new Block(blockHeader, transactionPool);
     }
 
