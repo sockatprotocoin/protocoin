@@ -17,6 +17,10 @@ public class ScriptSignature implements Bytable {
         return publicKey;
     }
 
+    public Bytes getSignature() {
+        return signature;
+    }
+
     @Override
     public byte[] getBytes() {
         return ArrayUtil.concat(signature, publicKey);

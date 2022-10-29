@@ -7,6 +7,7 @@ import net.ddns.protocoin.communication.connection.MessageMiddleware;
 import net.ddns.protocoin.communication.data.Message;
 import net.ddns.protocoin.communication.data.ReqType;
 import net.ddns.protocoin.core.blockchain.Blockchain;
+import net.ddns.protocoin.core.blockchain.block.Block;
 import net.ddns.protocoin.core.blockchain.transaction.Transaction;
 import net.ddns.protocoin.core.util.ArrayUtil;
 import net.ddns.protocoin.service.BlockChainService;
@@ -95,6 +96,12 @@ public class SocketThread extends Thread {
                         case NEW_TRANSACTION:
                             var transaction = Transaction.readFromInputStream(new ByteArrayInputStream(message.getContent()));
                             miningService.registerNewTransaction(transaction);
+                            break;
+                        case NEW_BLOCK:
+                            var block = Block.readFromInputStream(new ByteArrayInputStream(message.getContent()));
+                            if(!blockChainService.addBlock(block)){
+                                node.broadcast(new Message(ReqType.NEW_BLOCK, new byte[]{}));
+                            }
                             break;
                         case CLOSE_CONNECTION:
                             exit();

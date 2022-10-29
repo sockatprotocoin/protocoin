@@ -28,7 +28,7 @@ public class PayToPubKeyHash extends LockingScript {
 
     private static byte[] generateScript(byte[] publicKeyHash) {
         return ArrayUtil.concat(
-                new byte[]{OP_DUP.getOpCode(), OP_HASH160.getOpCode()},
+                new byte[]{OP_DUP.getOpCode(), OP_HASH160.getOpCode(), OP_PUSHDATA.getOpCode()},
                 publicKeyHash,
                 new byte[]{OP_EQUALVERIFY.getOpCode(), OP_CHECKSIG.getOpCode()}
         );

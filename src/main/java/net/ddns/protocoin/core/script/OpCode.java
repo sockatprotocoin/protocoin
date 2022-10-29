@@ -7,7 +7,7 @@ public enum OpCode {
     OP_HASH160((byte) 0x02),
     OP_EQUALVERIFY((byte) 0x03),
     OP_CHECKSIG((byte) 0x05),
-    OP_PUSHDATA((byte) 0x41);
+    OP_PUSHDATA((byte) 0x14);
 
     private final byte opCode;
 

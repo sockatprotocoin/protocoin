@@ -26,7 +26,7 @@ public class Signature implements Bytable {
     @Override
     public byte[] getBytes() {
         var paddedR = Bytes.of(r.toByteArray(), 32);
-        var paddedS = Bytes.of(r.toByteArray(), 32);
+        var paddedS = Bytes.of(s.toByteArray(), 32);
 
         return ArrayUtil.concat(paddedR, paddedS);
     }

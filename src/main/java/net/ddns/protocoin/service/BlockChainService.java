@@ -4,6 +4,8 @@ import net.ddns.protocoin.core.blockchain.Blockchain;
 import net.ddns.protocoin.core.blockchain.block.Block;
 import net.ddns.protocoin.service.database.UTXOStorage;
 
+import java.util.Arrays;
+
 public class BlockChainService {
     private Blockchain blockchain;
     private final UTXOStorage utxoStorage;
@@ -30,4 +32,14 @@ public class BlockChainService {
         return blockchain;
     }
 
+    public boolean addBlock(Block newBlock) {
+        var previousBlockHash = newBlock.getBlockHeader().getPreviousBlockHash();
+        for(Block block : blockchain.getBlockchain()) {
+            if (Arrays.equals(block.getHash(), previousBlockHash.getBytes())) {
+                blockchain.addBlock(newBlock);
+                return true;
+            }
+        }
+        return false;
+    }
 }

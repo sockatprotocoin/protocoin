@@ -7,6 +7,7 @@ import net.ddns.protocoin.core.blockchain.transaction.TransactionInput;
 import net.ddns.protocoin.core.blockchain.transaction.TransactionOutput;
 import net.ddns.protocoin.core.script.ScriptInterpreter;
 import net.ddns.protocoin.core.util.Converter;
+import net.ddns.protocoin.core.util.Hash;
 import net.ddns.protocoin.service.database.UTXOStorage;
 
 import java.io.IOException;
@@ -52,7 +53,8 @@ public class MiningService {
             if (matchingTransactionOutput.isEmpty()) {
                 return false;
             }
-            if (!scriptInterpreter.verify(matchingTransactionOutput.get().getLockingScript().getBytes(), transaction.getBytes())) {
+            if (!scriptInterpreter.verify(matchingTransactionOutput.get().getLockingScript(),
+                    Hash.sha256(transaction.getBytesWithoutSignatures()), transactionInput.getScriptSignature())) {
                 return false;
             }
             transactionOutputs.add(matchingTransactionOutput.get());
