@@ -1,8 +1,5 @@
 package net.ddns.protocoin.service;
 
-import net.ddns.protocoin.communication.connection.socket.Node;
-import net.ddns.protocoin.communication.data.Message;
-import net.ddns.protocoin.communication.data.ReqType;
 import net.ddns.protocoin.core.blockchain.block.Block;
 import net.ddns.protocoin.core.blockchain.block.BlockHeader;
 import net.ddns.protocoin.core.blockchain.transaction.Transaction;
@@ -33,7 +30,7 @@ public class MiningService {
 
     public void registerNewTransaction(Transaction transaction) {
         try {
-            if(verifyTransaction(transaction)) {
+            if (verifyTransaction(transaction)) {
                 this.transactionPool.add(transaction);
             }
         } catch (IOException e) {
@@ -49,13 +46,13 @@ public class MiningService {
 
     private boolean verifyTransaction(Transaction transaction) throws IOException {
         List<TransactionOutput> transactionOutputs = new ArrayList<>();
-        for(TransactionInput transactionInput : transaction.getTransactionInputs()){
+        for (TransactionInput transactionInput : transaction.getTransactionInputs()) {
             var matchingTransactionOutput =
                     utxoStorage.getMatchingUTXOForTransactionInput(transactionInput);
-            if(matchingTransactionOutput.isEmpty()) {
+            if (matchingTransactionOutput.isEmpty()) {
                 return false;
             }
-            if(!scriptInterpreter.verify(matchingTransactionOutput.get().getLockingScript().getBytes(),transaction.getBytes())){
+            if (!scriptInterpreter.verify(matchingTransactionOutput.get().getLockingScript().getBytes(), transaction.getBytes())) {
                 return false;
             }
             transactionOutputs.add(matchingTransactionOutput.get());
@@ -67,27 +64,25 @@ public class MiningService {
         return outputsTotalAmount.compareTo(newOutputsTotalAmount) >= 0;
     }
 
-    private BigInteger getTotalAmountOfOutputs(List<TransactionOutput> outputs){
+    private BigInteger getTotalAmountOfOutputs(List<TransactionOutput> outputs) {
         var amount = BigInteger.ZERO;
-        for(var transactionOutput : outputs){
+        for (var transactionOutput : outputs) {
             amount = amount.add(new BigInteger(transactionOutput.getAmount().getBytes()));
         }
         return amount;
     }
 
-    public Block createBlockCandidate(){
+    public Block createBlockCandidate() {
         var previousBlockHash = blockChainService.getBlockchain().getTopBlock().getHash();
         var timestamp =
                 ByteBuffer.allocate(4).putInt((int) (System.currentTimeMillis() / 1000)).array();
         var targetCompressed = Converter.hexStringToByteArray("200696F4");
         BlockHeader blockHeader = new BlockHeader(previousBlockHash,
-                new byte[]{32}, timestamp, targetCompressed,new byte[4]);
-        return new Block(blockHeader,transactionPool);
+                new byte[]{32}, timestamp, targetCompressed, new byte[4]);
+        return new Block(blockHeader, transactionPool);
     }
 
     public int getNumberOfWaitingTransactions() {
         return transactionPool.size();
     }
-
-
 }

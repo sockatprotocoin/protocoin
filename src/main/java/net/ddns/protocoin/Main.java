@@ -27,5 +27,6 @@ public class Main {
         var node = context.getNode();
 
         node.startListening(6969);
+        node.startMining();
     }
 }

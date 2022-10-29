@@ -42,19 +42,19 @@ public class UTXOStorage {
 
         getMatchingUTXOForTransactionInput(transactionInput).ifPresent(outputsForPubKeyHash::remove);
     }
+
     public void clear() {
         map.clear();
     }
 
-    public Optional<TransactionOutput> getMatchingUTXOForTransactionInput(TransactionInput transactionInput){
+    public Optional<TransactionOutput> getMatchingUTXOForTransactionInput(TransactionInput transactionInput) {
         var pubKeyHash = Hash.ripeMD160(Hash.sha256(transactionInput.getScriptSignature().getPublicKey().getBytes()));
         var pubKeyBytes = Bytes.of(pubKeyHash, 20);
         var outputsForPubKeyHash = map.get(pubKeyBytes);
 
-        if(outputsForPubKeyHash == null){
+        if (outputsForPubKeyHash == null) {
             return Optional.empty();
-        }
-        else {
+        } else {
             return outputsForPubKeyHash.stream().filter(output ->
                     Arrays.equals(
                             output.getParent().getTxId(), transactionInput.getTxid().getBytes()) &&
