@@ -50,15 +50,13 @@ public class BlockChainService {
 
     public void addBlock(Block newBlock) {
         var previousBlockHash = newBlock.getBlockHeader().getPreviousBlockHash();
-        for(Block block : blockchain.getBlockchain()) {
-            if (Arrays.equals(block.getHash(), previousBlockHash.getBytes())) {
-                blockchain.addBlock(newBlock);
-                eventBus.postEvent(
-                        new BroadcastNewBlockEvent(
-                                new Message(ReqType.BLOCKCHAIN_REQUEST, block.getBytes())
-                        )
-                );
-            }
+        if (Arrays.equals(blockchain.getTopBlock().getHash(), previousBlockHash.getBytes())) {
+            blockchain.addBlock(newBlock);
+            eventBus.postEvent(
+                    new BroadcastNewBlockEvent(
+                            new Message(ReqType.BLOCKCHAIN_REQUEST, newBlock.getBytes())
+                    )
+            );
         }
     }
 }
