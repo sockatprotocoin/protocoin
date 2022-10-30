@@ -18,9 +18,9 @@ public class AppContext {
     public AppContext() {
         this.eventBus = new EventBus();
         this.scriptInterpreter = new ScriptInterpreter(Curve.secp256k1);
-        this.utxoStorage = new UTXOStorage();
+        this.utxoStorage = new UTXOStorage(scriptInterpreter);
         this.blockChainService = new BlockChainService(utxoStorage, eventBus);
-        this.miningService = new MiningService(utxoStorage, this.scriptInterpreter, blockChainService, eventBus);
+        this.miningService = new MiningService(utxoStorage,blockChainService, eventBus);
         this.node = new Node(miningService, eventBus);
     }
 
@@ -31,4 +31,9 @@ public class AppContext {
     public Node getNode() {
         return node;
     }
+
+    public MiningService getMiningService() {
+        return miningService;
+    }
+
 }

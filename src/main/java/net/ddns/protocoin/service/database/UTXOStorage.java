@@ -1,16 +1,22 @@
 package net.ddns.protocoin.service.database;
 
 import net.ddns.protocoin.core.blockchain.data.Bytes;
+import net.ddns.protocoin.core.blockchain.transaction.Transaction;
 import net.ddns.protocoin.core.blockchain.transaction.TransactionInput;
 import net.ddns.protocoin.core.blockchain.transaction.TransactionOutput;
+import net.ddns.protocoin.core.script.ScriptInterpreter;
 import net.ddns.protocoin.core.util.Hash;
 
+import java.io.IOException;
+import java.math.BigInteger;
 import java.util.*;
 
 public class UTXOStorage {
     private final HashMap<Bytes, List<TransactionOutput>> map;
+    private final ScriptInterpreter scriptInterpreter;
 
-    public UTXOStorage() {
+    public UTXOStorage(ScriptInterpreter scriptInterpreter) {
+        this.scriptInterpreter = scriptInterpreter;
         map = new HashMap<>();
     }
 
@@ -61,5 +67,34 @@ public class UTXOStorage {
                             (output.getVout().equals(transactionInput.getVout()))
             ).findFirst();
         }
+    }
+
+    public boolean verifyTransaction(Transaction transaction){
+        List<TransactionOutput> transactionOutputs = new ArrayList<>();
+        for (TransactionInput transactionInput : transaction.getTransactionInputs()) {
+            var matchingTransactionOutput =
+                    getMatchingUTXOForTransactionInput(transactionInput);
+            if (matchingTransactionOutput.isEmpty()) {
+                return false;
+            }
+            if (!scriptInterpreter.verify(matchingTransactionOutput.get().getLockingScript(),
+                    Hash.sha256(transaction.getBytesWithoutSignatures()), transactionInput.getScriptSignature())) {
+                return false;
+            }
+            transactionOutputs.add(matchingTransactionOutput.get());
+        }
+
+        var outputsTotalAmount = getTotalAmountOfOutputs(transactionOutputs);
+        var newOutputsTotalAmount = getTotalAmountOfOutputs(transaction.getTransactionOutputs());
+
+        return outputsTotalAmount.compareTo(newOutputsTotalAmount) >= 0;
+    }
+
+    public BigInteger getTotalAmountOfOutputs(List<TransactionOutput> outputs) {
+        var amount = BigInteger.ZERO;
+        for (var transactionOutput : outputs) {
+            amount = amount.add(new BigInteger(transactionOutput.getAmount().getBytes()));
+        }
+        return amount;
     }
 }

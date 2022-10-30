@@ -124,5 +124,6 @@ public class Node {
 
     public void broadcast(Message message) {
         socketThreads.forEach(socketThread -> socketThread.sendMessage(message));
+        System.out.println("MSG SENT");
     }
 }

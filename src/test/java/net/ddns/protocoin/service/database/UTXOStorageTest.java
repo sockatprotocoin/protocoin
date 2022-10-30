@@ -9,11 +9,13 @@ import net.ddns.protocoin.core.blockchain.transaction.signature.PayToPubKeyHash;
 import net.ddns.protocoin.core.blockchain.transaction.signature.ScriptSignature;
 import net.ddns.protocoin.core.ecdsa.Curve;
 import net.ddns.protocoin.core.ecdsa.ECPoint;
+import net.ddns.protocoin.core.script.ScriptInterpreter;
 import net.ddns.protocoin.core.util.ArrayUtil;
 import net.ddns.protocoin.core.util.Converter;
 import net.ddns.protocoin.core.util.Hash;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -23,11 +25,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class UTXOStorageTest {
+    private ScriptInterpreter scriptInterpreter;
     private UTXOStorage utxoStorage;
 
     @BeforeEach
     void setup(){
-        utxoStorage = new UTXOStorage();
+        this.scriptInterpreter = Mockito.mock(ScriptInterpreter.class);
+        utxoStorage = new UTXOStorage(scriptInterpreter);
     }
 
     @Test
