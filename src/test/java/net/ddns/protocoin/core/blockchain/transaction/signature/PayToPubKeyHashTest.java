@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 class PayToPubKeyHashTest {
     private final byte[] publicKey = Converter.hexStringToByteArray("661BA57FED0D115222E30FE7E9509325EE30E7E284D3641E6FB5E67368C2DB185ADA8EFC5DC43AF6BF474A41ED6237573DC4ED693D49102C42FFC88510500799");
     private final byte[] publicKeyHashBytes = Hash.ripeMD160(Hash.sha256(publicKey));
-    private final byte[] payToPubKeyHashBytes = Converter.hexStringToByteArray("0102d0ecf5c0dcf3797201379ed48f2de37002fe823c0305");
+    private final byte[] payToPubKeyHashBytes = Converter.hexStringToByteArray("010214d0ecf5c0dcf3797201379ed48f2de37002fe823c0305");
 
     @Test
     void shouldGenerateValidBytes() {

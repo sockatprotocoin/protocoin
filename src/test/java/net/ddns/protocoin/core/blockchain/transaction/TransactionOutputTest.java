@@ -17,8 +17,8 @@ class TransactionOutputTest {
 
     private final Satoshi amount = Satoshi.valueOf(50.0);
     private final LockingScript lockingScript = PayToPubKeyHash.fromPublicKey(publicKeyHex.getBytes());
-    private final byte[] transactionBytes = Converter.hexStringToByteArray(
-            "000000012A05F200180102343B98E5F0860B422D7188F9F774E7C695BFC0AF0305"
+    private final byte[] transactionOutputBytes = Converter.hexStringToByteArray(
+            "000000012A05F20019010214343B98E5F0860B422D7188F9F774E7C695BFC0AF0305"
     );
 
     @Test
@@ -28,13 +28,13 @@ class TransactionOutputTest {
         var actualBytes = transactionOutput.getBytes();
 
         // then:
-        assertArrayEquals(transactionBytes, actualBytes);
+        assertArrayEquals(transactionOutputBytes, actualBytes);
     }
 
     @Test
     void shouldCorrectlyReadTransactionOutputBytes() throws IOException {
         // when:
-        var transactionOutput = TransactionOutput.readFromInputStream(new ByteArrayInputStream(transactionBytes));
+        var transactionOutput = TransactionOutput.readFromInputStream(new ByteArrayInputStream(transactionOutputBytes));
 
         // then:
         assertArrayEquals(amount.getBytes(), transactionOutput.getAmount().getBytes());
