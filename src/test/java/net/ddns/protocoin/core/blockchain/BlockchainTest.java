@@ -1,7 +1,7 @@
 package net.ddns.protocoin.core.blockchain;
 
-import net.ddns.protocoin.core.blockchain.Blockchain;
 import net.ddns.protocoin.core.blockchain.block.Block;
+import net.ddns.protocoin.core.blockchain.block.BlockDataException;
 import net.ddns.protocoin.core.blockchain.block.BlockHeader;
 import net.ddns.protocoin.core.blockchain.data.Satoshi;
 import net.ddns.protocoin.core.blockchain.transaction.Transaction;
@@ -41,7 +41,7 @@ class BlockchainTest {
     }
 
     @Test
-    void idk() throws IOException {
+    void idk() throws IOException, BlockDataException {
         var publicKey1 = new BigInteger(publicKeyHex1, 16).toByteArray();
         var publicKey2 = new BigInteger(publicKeyHex2, 16).toByteArray();
         var blockchain = new Blockchain(publicKey1);

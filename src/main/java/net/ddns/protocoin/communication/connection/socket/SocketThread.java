@@ -8,6 +8,7 @@ import net.ddns.protocoin.communication.data.Message;
 import net.ddns.protocoin.communication.data.ReqType;
 import net.ddns.protocoin.core.blockchain.Blockchain;
 import net.ddns.protocoin.core.blockchain.block.Block;
+import net.ddns.protocoin.core.blockchain.block.BlockDataException;
 import net.ddns.protocoin.core.blockchain.transaction.Transaction;
 import net.ddns.protocoin.core.util.ArrayUtil;
 import net.ddns.protocoin.service.BlockChainService;
@@ -110,7 +111,7 @@ public class SocketThread extends Thread {
 //                    logSocketInfo("message received (" + message.getReqType().name() + ")");
                     System.out.println("message received (" + message.getReqType().name() + ")");
                 }
-            } catch (IOException e) {
+            } catch (IOException | BlockDataException e) {
 //                logSocketInfo("failed reading message from input stream");
                 System.out.println("failed reading message from input stream");
                 break;

@@ -1,6 +1,7 @@
 package net.ddns.protocoin.core.blockchain;
 
 import net.ddns.protocoin.core.blockchain.block.Block;
+import net.ddns.protocoin.core.blockchain.block.BlockDataException;
 import net.ddns.protocoin.core.blockchain.block.BlockHeader;
 import net.ddns.protocoin.core.blockchain.data.Satoshi;
 import net.ddns.protocoin.core.blockchain.transaction.Transaction;
@@ -13,7 +14,6 @@ import java.io.InputStream;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -76,14 +76,12 @@ public class Blockchain implements Bytable {
         return ArrayUtil.concat(blockchain.stream().map(Block::getBytes).toArray(byte[][]::new));
     }
 
-    public static Blockchain readFromInputStream(InputStream is) throws IOException {
+    public static Blockchain readFromInputStream(InputStream is) throws IOException, BlockDataException {
         var blocks = new ArrayList<Block>();
 
         while (is.available() > 0) {
-            if (Arrays.equals(is.readNBytes(4), Block.MAGIC_BYTES.getBytes())) {
-                var block = Block.readFromInputStream(is);
-                blocks.add(block);
-            }
+            var block = Block.readFromInputStream(is);
+            blocks.add(block);
         }
 
         return new Blockchain(blocks);

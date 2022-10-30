@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Block implements Bytable {
@@ -65,7 +66,11 @@ public class Block implements Bytable {
         return Hash.sha256(getBytes(), 2);
     }
 
-    public static Block readFromInputStream(InputStream is) throws IOException {
+    public static Block readFromInputStream(InputStream is) throws BlockDataException, IOException {
+        if (!Arrays.equals(is.readNBytes(4), Block.MAGIC_BYTES.getBytes())) {
+            throw new BlockDataException();
+        }
+
         var header = BlockHeader.readFromInputStream(is);
         var transactionCount = VarInt.readFromIs(is);
         var transactions = new ArrayList<Transaction>();
