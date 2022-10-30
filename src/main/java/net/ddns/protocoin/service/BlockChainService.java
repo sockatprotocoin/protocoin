@@ -1,7 +1,14 @@
 package net.ddns.protocoin.service;
 
+import net.ddns.protocoin.communication.data.Message;
+import net.ddns.protocoin.communication.data.ReqType;
 import net.ddns.protocoin.core.blockchain.Blockchain;
 import net.ddns.protocoin.core.blockchain.block.Block;
+import net.ddns.protocoin.eventbus.EventBus;
+import net.ddns.protocoin.eventbus.event.BroadcastNewBlockEvent;
+import net.ddns.protocoin.eventbus.listener.BlockchainRequestEventListener;
+import net.ddns.protocoin.eventbus.listener.BlockchainResponseEventListener;
+import net.ddns.protocoin.eventbus.listener.NewBlockEventListener;
 import net.ddns.protocoin.service.database.UTXOStorage;
 
 import java.util.Arrays;
@@ -9,9 +16,18 @@ import java.util.Arrays;
 public class BlockChainService {
     private Blockchain blockchain;
     private final UTXOStorage utxoStorage;
+    private final EventBus eventBus;
 
-    public BlockChainService(UTXOStorage utxoStorage) {
+    public BlockChainService(UTXOStorage utxoStorage, EventBus eventBus) {
         this.utxoStorage = utxoStorage;
+        this.eventBus = eventBus;
+        setupListeners();
+    }
+
+    private void setupListeners() {
+        eventBus.registerListener(new BlockchainRequestEventListener(this::getBlockchain));
+        eventBus.registerListener(new BlockchainResponseEventListener(this::loadBlockChainToUTXOStorage));
+        eventBus.registerListener(new NewBlockEventListener(this::addBlock));
     }
 
     public void loadBlockChainToUTXOStorage(Blockchain blockchain) {
@@ -32,14 +48,17 @@ public class BlockChainService {
         return blockchain;
     }
 
-    public boolean addBlock(Block newBlock) {
+    public void addBlock(Block newBlock) {
         var previousBlockHash = newBlock.getBlockHeader().getPreviousBlockHash();
         for(Block block : blockchain.getBlockchain()) {
             if (Arrays.equals(block.getHash(), previousBlockHash.getBytes())) {
                 blockchain.addBlock(newBlock);
-                return true;
+                eventBus.postEvent(
+                        new BroadcastNewBlockEvent(
+                                new Message(ReqType.BLOCKCHAIN_REQUEST, block.getBytes())
+                        )
+                );
             }
         }
-        return false;
     }
 }

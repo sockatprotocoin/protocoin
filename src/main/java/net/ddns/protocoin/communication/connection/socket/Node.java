@@ -1,9 +1,14 @@
 package net.ddns.protocoin.communication.connection.socket;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import net.ddns.protocoin.communication.connection.MessageMiddleware;
 import net.ddns.protocoin.communication.data.Message;
 import net.ddns.protocoin.communication.data.ReqType;
-import net.ddns.protocoin.service.BlockChainService;
+import net.ddns.protocoin.eventbus.EventBus;
+import net.ddns.protocoin.eventbus.listener.BroadcastNewBlockEventListener;
+import net.ddns.protocoin.eventbus.listener.ConnectedNodesRequestEventListener;
+import net.ddns.protocoin.eventbus.listener.ConnectedNodesResponseEventListener;
+import net.ddns.protocoin.eventbus.listener.DisconnectNodeSocketEventListener;
 import net.ddns.protocoin.service.MiningService;
 import org.apache.log4j.Logger;
 
@@ -19,12 +24,23 @@ import java.util.stream.Collectors;
 public class Node {
     private final static Logger logger = Logger.getLogger(Node.class.getName());
     private final Set<SocketThread> socketThreads = new CopyOnWriteArraySet<>();
-    private final BlockChainService blockChainService;
+    private final EventBus eventBus;
     private final MiningService miningService;
 
-    public Node(BlockChainService blockChainService, MiningService miningService) {
-        this.blockChainService = blockChainService;
+    public Node(
+            MiningService miningService,
+            EventBus eventBus
+    ) {
+        this.eventBus = eventBus;
         this.miningService = miningService;
+        setupListeners();
+    }
+
+    private void setupListeners() {
+        eventBus.registerListener(new ConnectedNodesRequestEventListener(new ObjectMapper(), this::getNodesAddresses));
+        eventBus.registerListener(new DisconnectNodeSocketEventListener(this::disconnectNode));
+        eventBus.registerListener(new ConnectedNodesResponseEventListener(this::connectToNodes));
+        eventBus.registerListener(new BroadcastNewBlockEventListener(this::broadcast));
     }
 
     public void startMining() {
@@ -91,9 +107,13 @@ public class Node {
     }
 
     private void createThreadForConnection(Socket socket) {
-        var newSocketThread = new SocketThread(this, blockChainService, miningService, socket);
-        socketThreads.add(newSocketThread);
-        newSocketThread.start();
+        try {
+            var newSocketThread = new SocketThread(socket, new MessageMiddleware(), new ObjectMapper(), eventBus);
+            socketThreads.add(newSocketThread);
+            newSocketThread.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public List<InetSocketAddress> getNodesAddresses() {

@@ -8,6 +8,8 @@ import net.ddns.protocoin.core.blockchain.transaction.TransactionOutput;
 import net.ddns.protocoin.core.script.ScriptInterpreter;
 import net.ddns.protocoin.core.util.Converter;
 import net.ddns.protocoin.core.util.Hash;
+import net.ddns.protocoin.eventbus.EventBus;
+import net.ddns.protocoin.eventbus.listener.NewTransactionEventListener;
 import net.ddns.protocoin.service.database.UTXOStorage;
 
 import java.io.IOException;
@@ -21,12 +23,15 @@ public class MiningService {
     private final List<Transaction> transactionPool;
     private final ScriptInterpreter scriptInterpreter;
     private final BlockChainService blockChainService;
+    private final EventBus eventBus;
 
-    public MiningService(UTXOStorage utxoStorage, ScriptInterpreter scriptInterpreter, BlockChainService blockChainService) {
+    public MiningService(UTXOStorage utxoStorage, ScriptInterpreter scriptInterpreter, BlockChainService blockChainService, EventBus eventBus) {
         this.utxoStorage = utxoStorage;
         this.scriptInterpreter = scriptInterpreter;
         this.blockChainService = blockChainService;
+        this.eventBus = eventBus;
         this.transactionPool = new ArrayList<>();
+        setupListeners();
     }
 
     public void registerNewTransaction(Transaction transaction) {
@@ -37,6 +42,10 @@ public class MiningService {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void setupListeners() {
+        eventBus.registerListener(new NewTransactionEventListener(this::registerNewTransaction));
     }
 
     public Block startMining() {

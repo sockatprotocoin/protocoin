@@ -3,16 +3,13 @@ package net.ddns.protocoin.communication.connection.socket;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.ddns.protocoin.communication.connection.DataMiddleware;
-import net.ddns.protocoin.communication.connection.MessageMiddleware;
 import net.ddns.protocoin.communication.data.Message;
-import net.ddns.protocoin.communication.data.ReqType;
 import net.ddns.protocoin.core.blockchain.Blockchain;
 import net.ddns.protocoin.core.blockchain.block.Block;
 import net.ddns.protocoin.core.blockchain.block.BlockDataException;
 import net.ddns.protocoin.core.blockchain.transaction.Transaction;
-import net.ddns.protocoin.core.util.ArrayUtil;
-import net.ddns.protocoin.service.BlockChainService;
-import net.ddns.protocoin.service.MiningService;
+import net.ddns.protocoin.eventbus.EventBus;
+import net.ddns.protocoin.eventbus.event.*;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -26,34 +23,31 @@ import java.util.List;
 
 public class SocketThread extends Thread {
     private static final Logger logger = LogManager.getLogger(SocketThread.class);
-    private final Node node;
-    private final BlockChainService blockChainService;
-    private final MiningService miningService;
+    private final OutputStream out;
     private final Socket socket;
     private final DataMiddleware<InputStream, Message> dataMiddleware;
-    private OutputStream out;
+    private final ObjectMapper objectMapper;
+    private final EventBus eventBus;
 
     private boolean running;
 
-    public SocketThread(Node node, BlockChainService blockChainService, MiningService miningService, Socket socket) {
-        this.node = node;
-        this.blockChainService = blockChainService;
-        this.miningService = miningService;
+    public SocketThread(
+            Socket socket,
+            DataMiddleware<InputStream, Message> dataMiddleware,
+            ObjectMapper objectMapper,
+            EventBus eventBus
+    ) throws IOException {
+        this.out = socket.getOutputStream();
         this.socket = socket;
-        this.dataMiddleware = new MessageMiddleware();
-        try {
-            this.out = socket.getOutputStream();
-        } catch (IOException e) {
-            e.printStackTrace();
-            return;
-        }
+        this.dataMiddleware = dataMiddleware;
+        this.objectMapper = objectMapper;
+        this.eventBus = eventBus;
         this.running = true;
     }
 
     @Override
     public void run() {
         super.run();
-        var mapper = new ObjectMapper();
         while (running) {
             InputStream in;
             try {
@@ -68,41 +62,31 @@ public class SocketThread extends Thread {
                     var message = dataMiddleware.handle(in);
                     switch (message.getReqType()) {
                         case CONNECTED_NODES_REQUEST:
-                            sendMessage(
-                                    new Message(
-                                            ReqType.CONNECTED_NODES_RESPONSE,
-                                            mapper.writeValueAsBytes(node.getNodesAddresses())
-                                    )
+                            eventBus.postEvent(
+                                    new ConnectedNodesRequestEvent(this::sendMessage)
                             );
                             break;
                         case CONNECTED_NODES_RESPONSE:
-                            var addresses = mapper.readValue(
+                            var addresses = objectMapper.readValue(
                                     message.getContent(),
                                     new TypeReference<List<InetSocketAddress>>() {}
                             );
-                            node.connectToNodes(addresses);
+                            eventBus.postEvent(new ConnectedNodesResponseEvent(addresses));
                             break;
                         case BLOCKCHAIN_REQUEST:
-                            sendMessage(
-                                    new Message(
-                                            ReqType.BLOCKCHAIN_RESPONSE,
-                                            blockChainService.getBlockchain().getBytes()
-                                    )
-                            );
+                            eventBus.postEvent(new BlockchainRequestEvent(this::sendMessage));
                             break;
                         case BLOCKCHAIN_RESPONSE:
                             var blockchain = Blockchain.readFromInputStream(new ByteArrayInputStream(message.getContent()));
-                            blockChainService.loadBlockChainToUTXOStorage(blockchain);
+                            eventBus.postEvent(new BlockchainResponseEvent(blockchain));
                             break;
                         case NEW_TRANSACTION:
                             var transaction = Transaction.readFromInputStream(new ByteArrayInputStream(message.getContent()));
-                            miningService.registerNewTransaction(transaction);
+                            eventBus.postEvent(new NewTransactionEvent(transaction));
                             break;
                         case NEW_BLOCK:
                             var block = Block.readFromInputStream(new ByteArrayInputStream(message.getContent()));
-                            if(!blockChainService.addBlock(block)){
-                                node.broadcast(new Message(ReqType.BLOCKCHAIN_REQUEST, new byte[]{}));
-                            }
+                            eventBus.postEvent(new NewBlockEvent(block));
                             break;
                         case CLOSE_CONNECTION:
                             exit();
@@ -117,7 +101,7 @@ public class SocketThread extends Thread {
                 break;
             }
         }
-        node.disconnectNode(this);
+        eventBus.postEvent(new DisconnectNodeSocketEvent(this));
 //        logSocketInfo("connection ended");
         System.out.println("connection ended");
     }
@@ -138,10 +122,7 @@ public class SocketThread extends Thread {
 
     public void sendMessage(Message message) {
         try {
-            out.write(ArrayUtil.concat(
-                    new ObjectMapper().writeValueAsBytes(message)
-                    )
-            );
+            out.write(objectMapper.writeValueAsBytes(message));
         } catch (IOException e) {
 //            logSocketInfo("cannot send message");
             System.out.println("cannot send message");
@@ -152,5 +133,4 @@ public class SocketThread extends Thread {
     private void logSocketInfo(String info) {
         logger.info(socket.getInetAddress() + ":" + socket.getPort() + ": " + info);
     }
-
 }
