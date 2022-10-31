@@ -24,7 +24,8 @@ public class Block implements Bytable {
     public Block(BlockHeader blockHeader, List<Transaction> transactions) {
         this.blockHeader = blockHeader;
         this.transactionCount = new VarInt(transactions.size());
-        this.transactions = transactions;
+        this.transactions = new ArrayList<>();
+        this.transactions.addAll(transactions);
     }
 
     public BlockHeader getBlockHeader() {

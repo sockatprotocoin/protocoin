@@ -58,7 +58,7 @@ public class MiningService {
     }
 
     public void removeTransactionsAfterBlockIsMined(Block block) {
-        block.getTransactions().forEach(transactionPool::remove);
+        transactionPool.removeAll(block.getTransactions());
     }
 
     public int getNumberOfWaitingTransactions() {
