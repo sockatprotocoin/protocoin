@@ -30,6 +30,9 @@ public class MiningService {
         if (utxoStorage.verifyTransaction(transaction)) {
             this.transactionPool.add(transaction);
         }
+        transactionPool.removeAll(
+                blockChainService.getTransactionsUsingSameUTXO(transactionPool)
+        );
     }
 
     private void setupListeners() {
@@ -39,8 +42,10 @@ public class MiningService {
     public Block startMining() {
         var block = createBlockCandidate();
         block.mine();
+        blockChainService.addBlock(block);
         return block;
     }
+
     public Block createBlockCandidate() {
         var previousBlockHash = blockChainService.getBlockchain().getTopBlock().getHash();
         var timestamp =

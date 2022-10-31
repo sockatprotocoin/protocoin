@@ -5,6 +5,7 @@ import net.ddns.protocoin.core.blockchain.data.Satoshi;
 import net.ddns.protocoin.core.blockchain.transaction.Transaction;
 import net.ddns.protocoin.core.blockchain.transaction.TransactionInput;
 import net.ddns.protocoin.core.blockchain.transaction.TransactionOutput;
+import net.ddns.protocoin.core.blockchain.transaction.signature.LockingScript;
 import net.ddns.protocoin.core.blockchain.transaction.signature.PayToPubKeyHash;
 import net.ddns.protocoin.core.blockchain.transaction.signature.ScriptSignature;
 import net.ddns.protocoin.core.ecdsa.Curve;
@@ -15,7 +16,6 @@ import net.ddns.protocoin.core.util.Converter;
 import net.ddns.protocoin.core.util.Hash;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -23,6 +23,8 @@ import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class UTXOStorageTest {
     private ScriptInterpreter scriptInterpreter;
@@ -30,7 +32,7 @@ public class UTXOStorageTest {
 
     @BeforeEach
     void setup(){
-        this.scriptInterpreter = Mockito.mock(ScriptInterpreter.class);
+        this.scriptInterpreter = mock(ScriptInterpreter.class);
         utxoStorage = new UTXOStorage(scriptInterpreter);
     }
 
@@ -94,12 +96,42 @@ public class UTXOStorageTest {
         assertEquals(1, utxoStorage.getUTXOs(publicKey1Hash).size());
         assertEquals(0, utxoStorage.getUTXOs(publicKey2Hash).size());
 
-        utxoStorage.spentTransactionOutput(transactionInput);
+        utxoStorage.spendTransactionOutput(transactionInput);
         assertEquals(0, utxoStorage.getUTXOs(publicKey1Hash).size());
         assertEquals(0, utxoStorage.getUTXOs(publicKey2Hash).size());
 
         utxoStorage.addUnspentTransactionOutput(transactionOutput);
         assertEquals(0, utxoStorage.getUTXOs(publicKey1Hash).size());
         assertEquals(1, utxoStorage.getUTXOs(publicKey2Hash).size());
+    }
+
+    @Test
+    void shouldRegisterOutput() {
+        // given:
+        var transactionOutputMock = mock(TransactionOutput.class);
+        var lockingScriptMock = mock(LockingScript.class);
+        var receiverBytes = new byte[20];
+        when(transactionOutputMock.getLockingScript()).thenReturn(lockingScriptMock);
+        when(lockingScriptMock.getReceiver()).thenReturn(receiverBytes);
+
+        // when:
+        utxoStorage.addUnspentTransactionOutput(transactionOutputMock);
+        var utxos = utxoStorage.getUTXOs(receiverBytes);
+
+        // then:
+        assertEquals(utxos.size(), 1);
+        assertEquals(utxos.get(0), transactionOutputMock);
+    }
+
+    @Test
+    void shouldSpendOutput() {
+        var transactionInputMock = mock(TransactionInput.class);
+        var scriptMock = mock(ScriptSignature.class);
+        when(transactionInputMock.getScriptSignature()).thenReturn(scriptMock);
+    }
+
+    @Test
+    void shouldVerifyCorrectTransaction() {
+
     }
 }

@@ -31,6 +31,10 @@ public class Blockchain implements Bytable {
         this.blockchain = blocks;
     }
 
+    public Blockchain() {
+        this.blockchain = new ArrayList<>();
+    }
+
     public Block generateGenesisBlock(byte[] publicKey) {
         var header = new BlockHeader(
                 new byte[32],
@@ -56,7 +60,6 @@ public class Blockchain implements Bytable {
             throw new IllegalArgumentException("Cannot add unmined block to blockchain!");
         }
         this.blockchain.add(block);
-        // validate inputs
     }
 
     public Block getTopBlock() {

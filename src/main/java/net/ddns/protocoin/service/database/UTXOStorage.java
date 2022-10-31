@@ -7,7 +7,6 @@ import net.ddns.protocoin.core.blockchain.transaction.TransactionOutput;
 import net.ddns.protocoin.core.script.ScriptInterpreter;
 import net.ddns.protocoin.core.util.Hash;
 
-import java.io.IOException;
 import java.math.BigInteger;
 import java.util.*;
 
@@ -30,38 +29,28 @@ public class UTXOStorage {
 
     public void addUnspentTransactionOutput(TransactionOutput transactionOutput) {
         var pubKey = transactionOutput.getLockingScript().getReceiver();
-        var pubKeyBytes = Bytes.of(pubKey, 20);
-        if (!map.containsKey(pubKeyBytes)) {
-            var outputList = new ArrayList<TransactionOutput>();
-            map.put(pubKeyBytes, outputList);
-        }
-        var outputList = map.get(pubKeyBytes);
+        var outputList = getUTXOs(pubKey);
         if (!outputList.contains(transactionOutput)) {
             outputList.add(transactionOutput);
         }
     }
 
-    public void spentTransactionOutput(TransactionInput transactionInput) {
+    public void spendTransactionOutput(TransactionInput transactionInput) {
         var pubKeyHash = Hash.ripeMD160(Hash.sha256(transactionInput.getScriptSignature().getPublicKey().getBytes()));
-        var pubKeyBytes = Bytes.of(pubKeyHash, 20);
-        var outputsForPubKeyHash = map.get(pubKeyBytes);
+        var outputsForPubKeyHash = getUTXOs(pubKeyHash);
 
-        getMatchingUTXOForTransactionInput(transactionInput).ifPresent(outputsForPubKeyHash::remove);
+        findMatchingUTXOForTransactionInput(outputsForPubKeyHash, transactionInput).ifPresent(outputsForPubKeyHash::remove);
     }
 
     public void clear() {
         map.clear();
     }
 
-    public Optional<TransactionOutput> getMatchingUTXOForTransactionInput(TransactionInput transactionInput) {
-        var pubKeyHash = Hash.ripeMD160(Hash.sha256(transactionInput.getScriptSignature().getPublicKey().getBytes()));
-        var pubKeyBytes = Bytes.of(pubKeyHash, 20);
-        var outputsForPubKeyHash = map.get(pubKeyBytes);
-
-        if (outputsForPubKeyHash == null) {
+    private Optional<TransactionOutput> findMatchingUTXOForTransactionInput(List<TransactionOutput> outputs, TransactionInput transactionInput) {
+        if (outputs == null) {
             return Optional.empty();
         } else {
-            return outputsForPubKeyHash.stream().filter(output ->
+            return outputs.stream().filter(output ->
                     Arrays.equals(
                             output.getParent().getTxId(), transactionInput.getTxid().getBytes()) &&
                             (output.getVout().equals(transactionInput.getVout()))
@@ -69,11 +58,12 @@ public class UTXOStorage {
         }
     }
 
-    public boolean verifyTransaction(Transaction transaction){
+    public boolean verifyTransaction(Transaction transaction) {
         List<TransactionOutput> transactionOutputs = new ArrayList<>();
         for (TransactionInput transactionInput : transaction.getTransactionInputs()) {
+            var pubKeyHash = Hash.ripeMD160(Hash.sha256(transactionInput.getScriptSignature().getPublicKey().getBytes()));
             var matchingTransactionOutput =
-                    getMatchingUTXOForTransactionInput(transactionInput);
+                    findMatchingUTXOForTransactionInput(getUTXOs(pubKeyHash), transactionInput);
             if (matchingTransactionOutput.isEmpty()) {
                 return false;
             }

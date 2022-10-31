@@ -4,6 +4,8 @@ import net.ddns.protocoin.communication.data.Message;
 import net.ddns.protocoin.communication.data.ReqType;
 import net.ddns.protocoin.core.blockchain.Blockchain;
 import net.ddns.protocoin.core.blockchain.block.Block;
+import net.ddns.protocoin.core.blockchain.data.Bytes;
+import net.ddns.protocoin.core.blockchain.transaction.Transaction;
 import net.ddns.protocoin.eventbus.EventBus;
 import net.ddns.protocoin.eventbus.event.BroadcastNewBlockEvent;
 import net.ddns.protocoin.eventbus.listener.BlockchainRequestEventListener;
@@ -11,7 +13,7 @@ import net.ddns.protocoin.eventbus.listener.BlockchainResponseEventListener;
 import net.ddns.protocoin.eventbus.listener.NewBlockEventListener;
 import net.ddns.protocoin.service.database.UTXOStorage;
 
-import java.util.Arrays;
+import java.util.*;
 
 public class BlockChainService {
     private Blockchain blockchain;
@@ -26,34 +28,41 @@ public class BlockChainService {
 
     private void setupListeners() {
         eventBus.registerListener(new BlockchainRequestEventListener(this::getBlockchain));
-        eventBus.registerListener(new BlockchainResponseEventListener(this::loadBlockChainToUTXOStorage));
-        eventBus.registerListener(new NewBlockEventListener(this::addBlock));
+        eventBus.registerListener(new BlockchainResponseEventListener(this::loadBlockchain));
+        eventBus.registerListener(new NewBlockEventListener(newBlock -> {
+            addBlock(newBlock);
+            eventBus.postEvent(new BroadcastNewBlockEvent(new Message(ReqType.NEW_BLOCK, newBlock.getBytes())));
+        }));
     }
 
-    public void loadBlockChainToUTXOStorage(Blockchain blockchain) {
-        this.blockchain = blockchain;
+    public void loadBlockchain(Blockchain blockchain) {
         utxoStorage.clear();
+        this.blockchain = new Blockchain();
         for (var block : blockchain.getBlockchain()) {
-            var transactions = block.getTransactions();
-            if(!topBlockMatchesWith(block) || !blockHashIsBelowTarget(block)){
-                return;
-            }
-            for(var transaction : transactions){
-                if(!utxoStorage.verifyTransaction(transaction)){
-                    return;
-                }
-            }
-            registerTransactionsFromBlockToUTXOStorage(block);
+                addBlock(block);
         }
     }
 
-    public void registerTransactionsFromBlockToUTXOStorage(Block block){
+    public void addBlock(Block newBlock) {
+        try {
+            verifyBlockData(newBlock);
+        } catch (InvalidPreviousHashException e) {
+            eventBus.postEvent(new BroadcastNewBlockEvent(new Message(ReqType.BLOCKCHAIN_REQUEST, new byte[]{})));
+            return;
+        } catch (HashAboveTargetException | CorruptedTransactionDataException | DoubleSpendException e) {
+            return;
+        }
+        blockchain.addBlock(newBlock);
+        registerTransactionsFromBlockToUTXOStorage(newBlock);
+    }
+
+    public void registerTransactionsFromBlockToUTXOStorage(Block block) {
         var transactions = block.getTransactions();
         transactions.forEach(transaction ->
-            transaction.getTransactionInputs().forEach(utxoStorage::spentTransactionOutput)
+                transaction.getTransactionInputs().forEach(utxoStorage::spendTransactionOutput)
         );
         transactions.forEach(transaction ->
-            transaction.getTransactionOutputs().forEach(utxoStorage::addUnspentTransactionOutput)
+                transaction.getTransactionOutputs().forEach(utxoStorage::addUnspentTransactionOutput)
         );
     }
 
@@ -61,31 +70,57 @@ public class BlockChainService {
         return blockchain;
     }
 
-    public void addBlock(Block newBlock) {
-        if(!topBlockMatchesWith(newBlock))
-        {
-            eventBus.postEvent(new BroadcastNewBlockEvent(new Message(ReqType.BLOCKCHAIN_REQUEST,new byte[]{})));
+    public void verifyBlockData(Block block) throws InvalidPreviousHashException, HashAboveTargetException, CorruptedTransactionDataException, DoubleSpendException {
+        if (!topBlockMatchesWith(block)) {
+            throw new InvalidPreviousHashException();
         }
-        if(!blockHashIsBelowTarget(newBlock)){
-            return;
+        if (!blockHashIsBelowTarget(block)) {
+            throw new HashAboveTargetException();
         }
-        for(var transaction : newBlock.getTransactions()){
-            if(!utxoStorage.verifyTransaction(transaction)){
-                return;
+        for (var transaction : block.getTransactions()) {
+            if (!utxoStorage.verifyTransaction(transaction)) {
+                throw new CorruptedTransactionDataException();
             }
         }
-        blockchain.addBlock(newBlock);
-        registerTransactionsFromBlockToUTXOStorage(newBlock);
-        eventBus.postEvent(new BroadcastNewBlockEvent(new Message(ReqType.NEW_BLOCK, newBlock.getBytes())));
+        var invalidTransactions = getTransactionsUsingSameUTXO(block.getTransactions());
+        if (invalidTransactions.size() > 0) {
+            throw new DoubleSpendException();
+        }
     }
 
-    public boolean topBlockMatchesWith(Block newBlock){
-        var previousBlockHash = newBlock.getBlockHeader().getPreviousBlockHash();
+    private boolean topBlockMatchesWith(Block block) {
+        var previousBlockHash = block.getBlockHeader().getPreviousBlockHash();
         return Arrays.equals(blockchain.getTopBlock().getHash(), previousBlockHash.getBytes());
     }
 
-    public boolean blockHashIsBelowTarget(Block block){
+    private boolean blockHashIsBelowTarget(Block block) {
         //new BigInteger(block.getHash()).compareTo(block.getBlockHeader().getTarget()) < 0 ;
         return block.isMined();
+    }
+
+    public List<Transaction> getTransactionsUsingSameUTXO(List<Transaction> transactions) {
+        List<Transaction> invalidTransactions = new ArrayList<>();
+        var transactionsInputsMap = new HashMap<Bytes, List<Transaction>>();
+        transactions.forEach(transaction ->
+                transaction.getTransactionInputs().forEach(
+                        input ->
+                        {
+                            var inputBytes = Bytes.of(input.getBytes(), input.getBytes().length);
+                            if (!transactionsInputsMap.containsKey(inputBytes)) {
+                                transactionsInputsMap.put(inputBytes, new ArrayList<>());
+                            }
+
+                            var transactionsForInput = transactionsInputsMap.get(inputBytes);
+                            transactionsForInput.add(transaction);
+                        }
+                )
+        );
+        for(Map.Entry<Bytes, List<Transaction>> entry : transactionsInputsMap.entrySet()){
+            if(entry.getValue().size() != 1){
+                invalidTransactions.addAll(entry.getValue());
+            }
+        }
+
+        return invalidTransactions;
     }
 }
