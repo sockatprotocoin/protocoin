@@ -30,8 +30,9 @@ public class BlockChainService {
         eventBus.registerListener(new BlockchainRequestEventListener(this::getBlockchain));
         eventBus.registerListener(new BlockchainResponseEventListener(this::loadBlockchain));
         eventBus.registerListener(new NewBlockEventListener(newBlock -> {
-            addBlock(newBlock);
-            eventBus.postEvent(new BroadcastEvent(new Message(ReqType.NEW_BLOCK, newBlock.getBytes())));
+            if (addBlock(newBlock)) {
+                eventBus.postEvent(new BroadcastEvent(new Message(ReqType.NEW_BLOCK, newBlock.getBytes())));
+            }
         }));
     }
 
@@ -40,20 +41,19 @@ public class BlockChainService {
         this.blockchain = new Blockchain();
         for (var block : blockchain.getBlockchain()) {
                 addBlock(block);
+                //TODO: if addBlock returns false then there is no point of loading rest of blocks
         }
     }
 
-    public void addBlock(Block newBlock) {
+    public boolean addBlock(Block newBlock) {
         try {
             verifyBlockData(newBlock);
-        } catch (InvalidPreviousHashException e) {
-            eventBus.postEvent(new BroadcastEvent(new Message(ReqType.BLOCKCHAIN_REQUEST, new byte[]{})));
-            return;
-        } catch (HashAboveTargetException | CorruptedTransactionDataException | DoubleSpendException e) {
-            return;
+        } catch (InvalidPreviousHashException | HashAboveTargetException | CorruptedTransactionDataException | DoubleSpendException e) {
+            return false;
         }
         blockchain.addBlock(newBlock);
         registerTransactionsFromBlockToUTXOStorage(newBlock);
+        return true;
     }
 
     public void registerTransactionsFromBlockToUTXOStorage(Block block) {
@@ -71,6 +71,9 @@ public class BlockChainService {
     }
 
     public void verifyBlockData(Block block) throws InvalidPreviousHashException, HashAboveTargetException, CorruptedTransactionDataException, DoubleSpendException {
+        if (blockchain.getBlockchain().size() == 0) {
+            return;
+        }
         if (!topBlockMatchesWith(block)) {
             throw new InvalidPreviousHashException();
         }
