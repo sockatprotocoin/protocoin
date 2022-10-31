@@ -43,6 +43,7 @@ public class MiningService {
         var block = createBlockCandidate();
         block.mine();
         blockChainService.addBlock(block);
+        removeTransactionsAfterBlockIsMined(block);
         return block;
     }
 
@@ -56,7 +57,14 @@ public class MiningService {
         return new Block(blockHeader, transactionPool);
     }
 
+    public void removeTransactionsAfterBlockIsMined(Block block){
+        block.getTransactions().forEach(transactionPool::remove);
+    }
     public int getNumberOfWaitingTransactions() {
         return transactionPool.size();
+    }
+
+    public List<Transaction> getTransactionPool() {
+        return transactionPool;
     }
 }
