@@ -5,7 +5,7 @@ import net.ddns.protocoin.communication.connection.MessageMiddleware;
 import net.ddns.protocoin.communication.data.Message;
 import net.ddns.protocoin.communication.data.ReqType;
 import net.ddns.protocoin.eventbus.EventBus;
-import net.ddns.protocoin.eventbus.listener.BroadcastNewBlockEventListener;
+import net.ddns.protocoin.eventbus.listener.BroadcastEventListener;
 import net.ddns.protocoin.eventbus.listener.ConnectedNodesRequestEventListener;
 import net.ddns.protocoin.eventbus.listener.ConnectedNodesResponseEventListener;
 import net.ddns.protocoin.eventbus.listener.DisconnectNodeSocketEventListener;
@@ -40,7 +40,7 @@ public class Node {
         eventBus.registerListener(new ConnectedNodesRequestEventListener(new ObjectMapper(), this::getNodesAddresses));
         eventBus.registerListener(new DisconnectNodeSocketEventListener(this::disconnectNode));
         eventBus.registerListener(new ConnectedNodesResponseEventListener(this::connectToNodes));
-        eventBus.registerListener(new BroadcastNewBlockEventListener(this::broadcast));
+        eventBus.registerListener(new BroadcastEventListener(this::broadcast));
     }
 
     public void startMining() {

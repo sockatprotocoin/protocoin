@@ -2,8 +2,8 @@ package net.ddns.protocoin.eventbus.event;
 
 import net.ddns.protocoin.communication.data.Message;
 
-public class BroadcastNewBlockEvent extends Event<Message> {
-    public BroadcastNewBlockEvent(Message payload) {
+public class BroadcastEvent extends Event<Message> {
+    public BroadcastEvent(Message payload) {
         super(payload);
     }
 }

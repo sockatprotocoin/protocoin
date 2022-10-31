@@ -1,19 +1,19 @@
 package net.ddns.protocoin.eventbus.listener;
 
 import net.ddns.protocoin.communication.data.Message;
-import net.ddns.protocoin.eventbus.event.BroadcastNewBlockEvent;
+import net.ddns.protocoin.eventbus.event.BroadcastEvent;
 
 import java.util.function.Consumer;
 
-public class BroadcastNewBlockEventListener extends Listener<BroadcastNewBlockEvent> {
+public class BroadcastEventListener extends Listener<BroadcastEvent> {
     private final Consumer<Message> messageBroadcaster;
 
-    public BroadcastNewBlockEventListener(Consumer<Message> messageBroadcaster) {
+    public BroadcastEventListener(Consumer<Message> messageBroadcaster) {
         this.messageBroadcaster = messageBroadcaster;
     }
 
     @Override
-    protected void handle(BroadcastNewBlockEvent event) {
+    protected void handle(BroadcastEvent event) {
         messageBroadcaster.accept(event.eventPayload());
     }
 }

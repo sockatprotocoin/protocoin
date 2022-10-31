@@ -7,7 +7,7 @@ import net.ddns.protocoin.core.blockchain.block.Block;
 import net.ddns.protocoin.core.blockchain.data.Bytes;
 import net.ddns.protocoin.core.blockchain.transaction.Transaction;
 import net.ddns.protocoin.eventbus.EventBus;
-import net.ddns.protocoin.eventbus.event.BroadcastNewBlockEvent;
+import net.ddns.protocoin.eventbus.event.BroadcastEvent;
 import net.ddns.protocoin.eventbus.listener.BlockchainRequestEventListener;
 import net.ddns.protocoin.eventbus.listener.BlockchainResponseEventListener;
 import net.ddns.protocoin.eventbus.listener.NewBlockEventListener;
@@ -31,7 +31,7 @@ public class BlockChainService {
         eventBus.registerListener(new BlockchainResponseEventListener(this::loadBlockchain));
         eventBus.registerListener(new NewBlockEventListener(newBlock -> {
             addBlock(newBlock);
-            eventBus.postEvent(new BroadcastNewBlockEvent(new Message(ReqType.NEW_BLOCK, newBlock.getBytes())));
+            eventBus.postEvent(new BroadcastEvent(new Message(ReqType.NEW_BLOCK, newBlock.getBytes())));
         }));
     }
 
@@ -47,7 +47,7 @@ public class BlockChainService {
         try {
             verifyBlockData(newBlock);
         } catch (InvalidPreviousHashException e) {
-            eventBus.postEvent(new BroadcastNewBlockEvent(new Message(ReqType.BLOCKCHAIN_REQUEST, new byte[]{})));
+            eventBus.postEvent(new BroadcastEvent(new Message(ReqType.BLOCKCHAIN_REQUEST, new byte[]{})));
             return;
         } catch (HashAboveTargetException | CorruptedTransactionDataException | DoubleSpendException e) {
             return;

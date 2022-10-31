@@ -26,8 +26,9 @@ class BlockchainRequestEventListenerTest {
         Supplier<Blockchain> blockchainSupplier = () -> blockchain;
 
         new BlockchainRequestEventListener(blockchainSupplier).handle(new BlockchainRequestEvent(messageDigest));
+
         assertNotNull(messageToVerify[0]);
-        assertEquals(messageToVerify[0].getReqType(), ReqType.BLOCKCHAIN_RESPONSE);
-        assertEquals(messageToVerify[0].getContent(), bytesToVerify);
+        assertEquals(ReqType.BLOCKCHAIN_RESPONSE, messageToVerify[0].getReqType());
+        assertEquals(bytesToVerify, messageToVerify[0].getContent());
     }
 }

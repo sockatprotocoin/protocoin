@@ -18,6 +18,7 @@ class BlockchainResponseEventListenerTest {
         Consumer<Blockchain> blockchainDigest = blk -> blockchainToVerify[0] = blk;
 
         new BlockchainResponseEventListener(blockchainDigest).handle(new BlockchainResponseEvent(blockchain));
+
         assertEquals(blockchainToVerify[0], blockchain);
     }
 }
