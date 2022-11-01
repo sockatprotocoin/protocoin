@@ -6,34 +6,50 @@ import net.ddns.protocoin.core.script.ScriptInterpreter;
 import net.ddns.protocoin.eventbus.EventBus;
 import net.ddns.protocoin.service.database.UTXOStorage;
 
-public class AppContext {
+public class ProtocoinContext {
     private final EventBus eventBus;
+    private final Curve curve;
+    private final ScriptInterpreter scriptInterpreter;
     private final UTXOStorage utxoStorage;
     private final BlockChainService blockChainService;
     private final MiningService miningService;
     private final Node node;
 
-    private final ScriptInterpreter scriptInterpreter;
-
-    public AppContext() {
+    public ProtocoinContext() {
         this.eventBus = new EventBus();
-        this.scriptInterpreter = new ScriptInterpreter(Curve.secp256k1);
+        this.curve = Curve.secp256k1;
+        this.scriptInterpreter = new ScriptInterpreter(curve);
         this.utxoStorage = new UTXOStorage(scriptInterpreter);
         this.blockChainService = new BlockChainService(utxoStorage, eventBus);
         this.miningService = new MiningService(utxoStorage,blockChainService, eventBus);
         this.node = new Node(miningService, eventBus);
     }
 
-    public BlockChainService getBlockChainService() {
-        return blockChainService;
+    public EventBus getEventBus() {
+        return eventBus;
     }
 
-    public Node getNode() {
-        return node;
+    public Curve getCurve() {
+        return curve;
+    }
+
+    public ScriptInterpreter getScriptInterpreter() {
+        return scriptInterpreter;
+    }
+
+    public UTXOStorage getUtxoStorage() {
+        return utxoStorage;
+    }
+
+    public BlockChainService getBlockChainService() {
+        return blockChainService;
     }
 
     public MiningService getMiningService() {
         return miningService;
     }
 
+    public Node getNode() {
+        return node;
+    }
 }
