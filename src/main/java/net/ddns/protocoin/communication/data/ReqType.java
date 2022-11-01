@@ -1,0 +1,13 @@
+package net.ddns.protocoin.communication.data;
+
+public enum ReqType {
+    CONNECTED_NODES_REQUEST,
+    CONNECTED_NODES_RESPONSE,
+    BLOCKCHAIN_REQUEST,
+    BLOCKCHAIN_RESPONSE,
+    TOP_BLOCK_REQUEST,
+    TOP_BLOCK_RESPONSE,
+    NEW_TRANSACTION,
+    NEW_BLOCK,
+    CLOSE_CONNECTION;
+}
