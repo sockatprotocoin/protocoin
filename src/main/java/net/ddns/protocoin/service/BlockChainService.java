@@ -39,7 +39,7 @@ public class BlockChainService {
     public void loadBlockchain(Blockchain blockchain) {
         utxoStorage.clear();
         this.blockchain = new Blockchain();
-        for (var block : blockchain.getBlockchain()) {
+        for (var block : blockchain.getBlockList()) {
                 addBlock(block);
                 //TODO: if addBlock returns false then there is no point of loading rest of blocks
         }
@@ -71,7 +71,7 @@ public class BlockChainService {
     }
 
     public void verifyBlockData(Block block) throws InvalidPreviousHashException, HashAboveTargetException, CorruptedTransactionDataException, DoubleSpendException {
-        if (blockchain.getBlockchain().size() == 0) {
+        if (blockchain.getBlockList().size() == 0) {
             return;
         }
         if (!topBlockMatchesWith(block)) {

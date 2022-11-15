@@ -70,7 +70,7 @@ public class Blockchain implements Bytable {
         return blockchain.get(height);
     }
 
-    public List<Block> getBlockchain() {
+    public List<Block> getBlockList() {
         return blockchain;
     }
 

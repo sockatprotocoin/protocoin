@@ -10,8 +10,6 @@ import net.ddns.protocoin.core.blockchain.block.BlockDataException;
 import net.ddns.protocoin.core.blockchain.transaction.Transaction;
 import net.ddns.protocoin.eventbus.EventBus;
 import net.ddns.protocoin.eventbus.event.*;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -20,9 +18,11 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class SocketThread extends Thread {
-    private static final Logger logger = LogManager.getLogger(SocketThread.class);
+    private static final Logger logger = Logger.getLogger(SocketThread.class.getName());
     private final OutputStream out;
     private final Socket socket;
     private final DataMiddleware<InputStream, Message> dataMiddleware;
@@ -48,13 +48,13 @@ public class SocketThread extends Thread {
     @Override
     public void run() {
         super.run();
+        logSocketInfo("connection opened");
         while (running) {
             InputStream in;
             try {
                 in = socket.getInputStream();
             } catch (IOException e) {
-    //            logSocketInfo("can't get input stream from socket");
-                System.out.println("can't get input stream from socket");
+                logSocketInfo("can't get input stream from socket");
                 return;
             }
             try {
@@ -92,18 +92,15 @@ public class SocketThread extends Thread {
                             exit();
                             break;
                     }
-//                    logSocketInfo("message received (" + message.getReqType().name() + ")");
-                    System.out.println("message received (" + message.getReqType().name() + ")");
+                    logSocketInfo("message received (" + message.getReqType().name() + ")");
                 }
             } catch (IOException | BlockDataException e) {
-//                logSocketInfo("failed reading message from input stream");
-                System.out.println("failed reading message from input stream");
+                logSocketInfo("failed reading message from input stream");
                 break;
             }
         }
         eventBus.postEvent(new DisconnectNodeSocketEvent(this));
-//        logSocketInfo("connection ended");
-        System.out.println("connection ended");
+        logSocketInfo("connection ended");
     }
 
     public InetSocketAddress getSocketAddress() {
@@ -115,22 +112,21 @@ public class SocketThread extends Thread {
             running = false;
             socket.close();
         } catch (IOException ignored) {
-//            logSocketInfo("couldn't close socket");
-            System.out.println("couldn't close socket");
+            logSocketInfo("couldn't close socket");
         }
     }
 
     public void sendMessage(Message message) {
         try {
+            logSocketInfo("message sending (" + message.getReqType().name() + ")");
             out.write(objectMapper.writeValueAsBytes(message));
         } catch (IOException e) {
-//            logSocketInfo("cannot send message");
-            System.out.println("cannot send message");
+            logSocketInfo("cannot send message");
             exit();
         }
     }
 
     private void logSocketInfo(String info) {
-        logger.info(socket.getInetAddress() + ":" + socket.getPort() + ": " + info);
+        logger.log(Level.INFO, socket.getInetAddress() + ":" + socket.getPort() + " " + info);
     }
 }
