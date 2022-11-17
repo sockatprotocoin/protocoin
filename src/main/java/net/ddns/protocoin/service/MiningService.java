@@ -42,7 +42,6 @@ public class MiningService {
     public Block startMining() {
         var block = createBlockCandidate();
         block.mine();
-        blockChainService.addBlock(block);
         removeTransactionsAfterBlockIsMined(block);
         return block;
     }

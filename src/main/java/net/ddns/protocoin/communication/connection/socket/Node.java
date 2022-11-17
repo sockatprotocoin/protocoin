@@ -5,12 +5,12 @@ import net.ddns.protocoin.communication.connection.MessageMiddleware;
 import net.ddns.protocoin.communication.data.Message;
 import net.ddns.protocoin.communication.data.ReqType;
 import net.ddns.protocoin.eventbus.EventBus;
+import net.ddns.protocoin.eventbus.event.NewBlockEvent;
 import net.ddns.protocoin.eventbus.listener.BroadcastEventListener;
 import net.ddns.protocoin.eventbus.listener.ConnectedNodesRequestEventListener;
 import net.ddns.protocoin.eventbus.listener.ConnectedNodesResponseEventListener;
 import net.ddns.protocoin.eventbus.listener.DisconnectNodeSocketEventListener;
 import net.ddns.protocoin.service.MiningService;
-import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -19,10 +19,12 @@ import java.net.Socket;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class Node {
-    private final static Logger logger = Logger.getLogger(Node.class.getName());
+    private final Logger logger = Logger.getLogger(Node.class.getName());
     private final Set<SocketThread> socketThreads = new CopyOnWriteArraySet<>();
     private final EventBus eventBus;
     private final MiningService miningService;
@@ -43,12 +45,12 @@ public class Node {
         eventBus.registerListener(new BroadcastEventListener(this::broadcast));
     }
 
-    public void startMining() {
+    public void startMining(int transactionNeededForNewBlock) {
         new Thread(() -> {
             while (true) {
-                if (miningService.getNumberOfWaitingTransactions() >= 2) {
+                if (miningService.getNumberOfWaitingTransactions() >= transactionNeededForNewBlock) {
                     var newBlock = miningService.startMining();
-                    broadcast(new Message(ReqType.NEW_BLOCK, newBlock.getBytes()));
+                    eventBus.postEvent(new NewBlockEvent(newBlock));
                 }
                 try {
                     Thread.sleep(500);
@@ -66,14 +68,14 @@ public class Node {
             try {
                 serverSocket = new ServerSocket(port);
             } catch (IOException e) {
-                logger.error("Cannot create socket server on port: " + port);
+                logger.log(Level.WARNING, "Cannot create socket server on port: " + port);
             }
 
             while (true) {
                 try {
                     socket = serverSocket.accept();
                 } catch (IOException e) {
-                    logger.error("Failed reading on port: " + port);
+                    logger.log(Level.WARNING, "Failed reading on port: " + port);
                 }
                 createThreadForConnection(socket);
             }
@@ -124,6 +126,10 @@ public class Node {
 
     public void broadcast(Message message) {
         socketThreads.forEach(socketThread -> socketThread.sendMessage(message));
-        System.out.println("MSG SENT");
+        logger.log(Level.INFO, "message broadcasted to network");
+    }
+
+    public int connectedNetworkSize() {
+        return socketThreads.size();
     }
 }

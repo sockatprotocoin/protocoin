@@ -18,6 +18,10 @@ public class PayToPubKeyHash extends LockingScript {
 
     public static PayToPubKeyHash fromPublicKey(byte[] publicKey) {
         var pubKeyHash = Hash.ripeMD160(Hash.sha256(publicKey));
+        return fromPubKeyHash(pubKeyHash);
+    }
+
+    public static PayToPubKeyHash fromPubKeyHash(byte[] pubKeyHash) {
         return new PayToPubKeyHash(generateScript(pubKeyHash), pubKeyHash);
     }
 
