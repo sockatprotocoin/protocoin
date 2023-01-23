@@ -41,18 +41,6 @@ public class Block implements Bytable {
 
         while (!isMined()) {
             blockHeader.setNonce(random.bytes(4));
-            var hash = getHash();
-            String zeros = "";
-            for (var b : hash) {
-                if (b == 0) {
-                    zeros += "0";
-                } else {
-                    break;
-                }
-            }
-            if (zeros.length() > 2) {
-                System.out.println(zeros);
-            }
         }
     }
 

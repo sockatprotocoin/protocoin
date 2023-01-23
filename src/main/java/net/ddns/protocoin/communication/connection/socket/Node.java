@@ -13,6 +13,7 @@ import net.ddns.protocoin.eventbus.listener.DisconnectNodeSocketEventListener;
 import net.ddns.protocoin.service.MiningService;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -28,13 +29,15 @@ public class Node {
     private final Set<SocketThread> socketThreads = new CopyOnWriteArraySet<>();
     private final EventBus eventBus;
     private final MiningService miningService;
+    private final int port;
 
     public Node(
             MiningService miningService,
-            EventBus eventBus
-    ) {
+            EventBus eventBus,
+            int port) {
         this.eventBus = eventBus;
         this.miningService = miningService;
+        this.port = port;
         setupListeners();
     }
 
@@ -59,9 +62,11 @@ public class Node {
                 }
             }
         }).start();
+        logger.log(Level.INFO, "Mining process started");
     }
 
-    public void startListening(int port) {
+    public void startListening() {
+        logger.log(Level.INFO, "Starting to listen for new connections on port: " + port);
         new Thread(() -> {
             ServerSocket serverSocket = null;
             Socket socket = null;
@@ -83,16 +88,26 @@ public class Node {
     }
 
     public void connectToNodes(List<InetSocketAddress> inetSocketAddresses) {
-        for (InetSocketAddress inetSocketAddress : inetSocketAddresses) {
+        inetSocketAddresses.forEach(inetSocketAddress -> {
             try {
                 connectToNode(inetSocketAddress);
             } catch (IOException e) {
-                System.out.println("Cannot connect to node: " + inetSocketAddress.getAddress().getHostAddress());
+                logger.log(Level.WARNING, "Cannot connect to node: " + inetSocketAddress.getAddress().getHostAddress());
             }
-        }
+        });
     }
 
     public void connectToNode(InetSocketAddress inetSocketAddress) throws IOException {
+        if (
+                inetSocketAddress.getAddress().equals(InetAddress.getLocalHost()) ||
+                socketThreads.stream().anyMatch(
+                        socketThread -> socketThread.getSocketAddress().getAddress().getHostAddress().equals(
+                                inetSocketAddress.getAddress().getHostAddress()
+                        )
+                )
+        ) {
+            return;
+        }
         var socket = new Socket();
         socket.connect(inetSocketAddress, 1000);
         socket.getOutputStream().write(new ObjectMapper().writeValueAsBytes(
@@ -121,6 +136,7 @@ public class Node {
     public List<InetSocketAddress> getNodesAddresses() {
         return socketThreads.stream()
                 .map(SocketThread::getSocketAddress)
+                .map(inetSocketAddress -> new InetSocketAddress(inetSocketAddress.getAddress(), port))
                 .collect(Collectors.toList());
     }
 
@@ -131,5 +147,9 @@ public class Node {
 
     public int connectedNetworkSize() {
         return socketThreads.size();
+    }
+
+    public int getPort() {
+        return port;
     }
 }

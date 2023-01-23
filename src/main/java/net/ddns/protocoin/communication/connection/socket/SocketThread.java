@@ -48,7 +48,7 @@ public class SocketThread extends Thread {
     @Override
     public void run() {
         super.run();
-        logSocketInfo("connection opened");
+        logSocketInfo("connection opened with: " + socket.getInetAddress().getHostAddress() + ", on port: " + socket.getPort());
         while (running) {
             InputStream in;
             try {
