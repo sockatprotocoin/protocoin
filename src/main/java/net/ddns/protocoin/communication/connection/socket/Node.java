@@ -13,9 +13,7 @@ import net.ddns.protocoin.eventbus.listener.DisconnectNodeSocketEventListener;
 import net.ddns.protocoin.service.MiningService;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.*;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -29,6 +27,7 @@ public class Node {
     private final EventBus eventBus;
     private final MiningService miningService;
     private final int port;
+    private final String machineIp;
 
     public Node(
             MiningService miningService,
@@ -37,6 +36,7 @@ public class Node {
         this.eventBus = eventBus;
         this.miningService = miningService;
         this.port = port;
+        this.machineIp = findMachineIp();
         setupListeners();
     }
 
@@ -78,12 +78,34 @@ public class Node {
             while (true) {
                 try {
                     socket = serverSocket.accept();
+                    createThreadForConnection(socket);
                 } catch (IOException e) {
                     logger.log(Level.WARNING, "Failed reading on port: " + port);
                 }
-                createThreadForConnection(socket);
             }
         }).start();
+    }
+
+    private String findMachineIp() {
+        try {
+            var enumeration = NetworkInterface.getNetworkInterfaces();
+            while (enumeration.hasMoreElements()) {
+                var networkInterface = enumeration.nextElement();
+                var interfaceName = networkInterface.getName();
+                if (interfaceName.equals("en0") || interfaceName.equals("eth0")) {
+                    for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
+                        var address = interfaceAddress.getAddress();
+                        if (address instanceof Inet4Address) {
+                            logger.log(Level.INFO, "Local machine address: " + address.getHostAddress());
+                            return address.getHostAddress();
+                        }
+                    }
+                }
+            }
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
+        return "";
     }
 
     public void connectToNodes(List<InetSocketAddress> inetSocketAddresses) {
@@ -98,27 +120,16 @@ public class Node {
 
     public void connectToNode(InetSocketAddress inetSocketAddress) throws IOException {
         if (
-                socketThreads.stream().anyMatch(
-                        socketThread -> socketThread.getSocketAddress().getAddress().getHostAddress().equals(
+                socketThreads.stream().anyMatch(socketThread ->
+                        socketThread.getSocketAddress().getAddress().getHostAddress().equals(
                                 inetSocketAddress.getAddress().getHostAddress()
-                        )
+                        ) || inetSocketAddress.getAddress().getHostAddress().equals(machineIp)
                 )
         ) {
             return;
         }
         var socket = new Socket();
         socket.connect(inetSocketAddress, 1000);
-        socket.getOutputStream().write(new ObjectMapper().writeValueAsBytes(
-                new Message(
-                        ReqType.CONNECTED_NODES_REQUEST,
-                        new byte[0]
-                )
-        ));
-        socket.getOutputStream().write(new ObjectMapper().writeValueAsBytes(
-                new Message(
-                        ReqType.BLOCKCHAIN_REQUEST, new byte[0]
-                )
-        ));
         createThreadForConnection(socket);
     }
 
@@ -126,14 +137,25 @@ public class Node {
         socketThreads.remove(socketThread);
     }
 
-    private void createThreadForConnection(Socket socket) {
-        try {
-            var newSocketThread = new SocketThread(socket, new MessageMiddleware(), new ObjectMapper(), eventBus);
-            socketThreads.add(newSocketThread);
-            newSocketThread.start();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    private void createThreadForConnection(Socket socket) throws IOException {
+        var newSocketThread = new SocketThread(socket, new MessageMiddleware(), new ObjectMapper(), eventBus);
+        socketThreads.add(newSocketThread);
+        newSocketThread.setOnThreadStarted(() -> {
+            newSocketThread.sendMessage(
+                    new Message(
+                            ReqType.CONNECTED_NODES_REQUEST, new byte[0]
+                    )
+            );
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException ignored) {}
+            newSocketThread.sendMessage(
+                    new Message(
+                            ReqType.BLOCKCHAIN_REQUEST, new byte[0]
+                    )
+            );
+        });
+        newSocketThread.start();
     }
 
     public List<InetSocketAddress> getNodesAddresses() {

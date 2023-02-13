@@ -31,6 +31,8 @@ public class SocketThread extends Thread {
 
     private boolean running;
 
+    private Runnable onThreadStarted = () -> {};
+
     public SocketThread(
             Socket socket,
             DataMiddleware<InputStream, Message> dataMiddleware,
@@ -49,6 +51,7 @@ public class SocketThread extends Thread {
     public void run() {
         super.run();
         logSocketInfo("connection opened with: " + socket.getInetAddress().getHostAddress() + ", on port: " + socket.getPort());
+        onThreadStarted.run();
         while (running) {
             InputStream in;
             try {
@@ -101,6 +104,10 @@ public class SocketThread extends Thread {
         }
         eventBus.postEvent(new DisconnectNodeSocketEvent(this));
         logSocketInfo("connection ended");
+    }
+
+    public void setOnThreadStarted(Runnable onThreadStarted) {
+        this.onThreadStarted = onThreadStarted;
     }
 
     public InetSocketAddress getSocketAddress() {
