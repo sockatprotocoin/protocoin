@@ -60,6 +60,7 @@ public class SocketThread extends Thread {
             try {
                 if (in.available() > 0) {
                     var message = dataMiddleware.handle(in);
+                    logSocketInfo("message received (" + message.getReqType().name() + ")");
                     switch (message.getReqType()) {
                         case CONNECTED_NODES_REQUEST:
                             eventBus.postEvent(
@@ -92,7 +93,6 @@ public class SocketThread extends Thread {
                             exit();
                             break;
                     }
-                    logSocketInfo("message received (" + message.getReqType().name() + ")");
                 }
             } catch (IOException | BlockDataException e) {
                 logSocketInfo("failed reading message from input stream");

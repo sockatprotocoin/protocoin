@@ -21,6 +21,7 @@ public class BlockChainService {
     private final EventBus eventBus;
 
     public BlockChainService(UTXOStorage utxoStorage, EventBus eventBus) {
+        this.blockchain = new Blockchain();
         this.utxoStorage = utxoStorage;
         this.eventBus = eventBus;
         setupListeners();
@@ -37,11 +38,20 @@ public class BlockChainService {
     }
 
     public void loadBlockchain(Blockchain blockchain) {
+        if (blockchain.getBlockList().size() <= this.blockchain.getBlockList().size()) {
+            return;
+        }
+        for (Block block : blockchain.getBlockList()) {
+            try {
+                verifyBlockData(block);
+            } catch (InvalidPreviousHashException | HashAboveTargetException | CorruptedTransactionDataException | DoubleSpendException e) {
+                return;
+            }
+        }
         utxoStorage.clear();
         this.blockchain = new Blockchain();
         for (var block : blockchain.getBlockList()) {
                 addBlock(block);
-                //TODO: if addBlock returns false then there is no point of loading rest of blocks
         }
     }
 
@@ -97,7 +107,6 @@ public class BlockChainService {
     }
 
     private boolean blockHashIsBelowTarget(Block block) {
-        //new BigInteger(block.getHash()).compareTo(block.getBlockHeader().getTarget()) < 0 ;
         return block.isMined();
     }
 

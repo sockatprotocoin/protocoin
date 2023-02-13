@@ -13,7 +13,6 @@ import net.ddns.protocoin.eventbus.listener.DisconnectNodeSocketEventListener;
 import net.ddns.protocoin.service.MiningService;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -99,7 +98,6 @@ public class Node {
 
     public void connectToNode(InetSocketAddress inetSocketAddress) throws IOException {
         if (
-                inetSocketAddress.getAddress().equals(InetAddress.getLocalHost()) ||
                 socketThreads.stream().anyMatch(
                         socketThread -> socketThread.getSocketAddress().getAddress().getHostAddress().equals(
                                 inetSocketAddress.getAddress().getHostAddress()
@@ -114,6 +112,11 @@ public class Node {
                 new Message(
                         ReqType.CONNECTED_NODES_REQUEST,
                         new byte[0]
+                )
+        ));
+        socket.getOutputStream().write(new ObjectMapper().writeValueAsBytes(
+                new Message(
+                        ReqType.BLOCKCHAIN_REQUEST, new byte[0]
                 )
         ));
         createThreadForConnection(socket);
