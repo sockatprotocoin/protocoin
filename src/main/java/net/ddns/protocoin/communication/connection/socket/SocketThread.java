@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.ddns.protocoin.communication.connection.DataMiddleware;
 import net.ddns.protocoin.communication.data.Message;
+import net.ddns.protocoin.communication.data.ReqType;
 import net.ddns.protocoin.core.blockchain.Blockchain;
 import net.ddns.protocoin.core.blockchain.block.Block;
 import net.ddns.protocoin.core.blockchain.block.BlockDataException;
@@ -18,6 +19,8 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,8 +33,8 @@ public class SocketThread extends Thread {
     private final EventBus eventBus;
 
     private boolean running;
-
-    private Runnable onThreadStarted = () -> {};
+    private final Timer timer;
+    private Runnable onThreadStarted ;
 
     public SocketThread(
             Socket socket,
@@ -45,6 +48,8 @@ public class SocketThread extends Thread {
         this.objectMapper = objectMapper;
         this.eventBus = eventBus;
         this.running = true;
+        this.timer = new Timer();
+        this.onThreadStarted = () -> {};
     }
 
     @Override
@@ -52,6 +57,7 @@ public class SocketThread extends Thread {
         super.run();
         logSocketInfo("connection opened with: " + socket.getInetAddress().getHostAddress() + ", on port: " + socket.getPort());
         onThreadStarted.run();
+        setUpHeartbeat();
         while (running) {
             InputStream in;
             try {
@@ -63,7 +69,9 @@ public class SocketThread extends Thread {
             try {
                 if (in.available() > 0) {
                     var message = dataMiddleware.handle(in);
-                    logSocketInfo("message received (" + message.getReqType().name() + ")");
+                    if (!message.getReqType().equals(ReqType.HEARTBEAT)) {
+                        logSocketInfo("message received (" + message.getReqType().name() + ")");
+                    }
                     switch (message.getReqType()) {
                         case CONNECTED_NODES_REQUEST:
                             eventBus.postEvent(
@@ -110,6 +118,16 @@ public class SocketThread extends Thread {
         this.onThreadStarted = onThreadStarted;
     }
 
+    private void setUpHeartbeat() {
+        timer.schedule(new TimerTask() {
+               @Override
+               public void run() {
+                   sendMessage(new Message(ReqType.HEARTBEAT, new byte[0]));
+               }
+           }
+        , 0, 1000);
+    }
+
     public InetSocketAddress getSocketAddress() {
         return new InetSocketAddress(socket.getInetAddress(), socket.getPort());
     }
@@ -117,6 +135,7 @@ public class SocketThread extends Thread {
     public void exit() {
         try {
             running = false;
+            timer.cancel();
             socket.close();
         } catch (IOException ignored) {
             logSocketInfo("couldn't close socket");
@@ -125,7 +144,9 @@ public class SocketThread extends Thread {
 
     public void sendMessage(Message message) {
         try {
-            logSocketInfo("message sending (" + message.getReqType().name() + ")");
+            if (!message.getReqType().equals(ReqType.HEARTBEAT)) {
+                logSocketInfo("message sending (" + message.getReqType().name() + ")");
+            }
             out.write(objectMapper.writeValueAsBytes(message));
         } catch (IOException e) {
             logSocketInfo("cannot send message");
@@ -134,6 +155,6 @@ public class SocketThread extends Thread {
     }
 
     private void logSocketInfo(String info) {
-        logger.log(Level.INFO, socket.getInetAddress() + ":" + socket.getPort() + " " + info);
+        logger.log(Level.INFO, socket.getInetAddress().getHostAddress() + ":" + socket.getPort() + " " + info);
     }
 }

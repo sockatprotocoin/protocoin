@@ -9,5 +9,6 @@ public enum ReqType {
     TOP_BLOCK_RESPONSE,
     NEW_TRANSACTION,
     NEW_BLOCK,
-    CLOSE_CONNECTION;
+    CLOSE_CONNECTION,
+    HEARTBEAT;
 }
